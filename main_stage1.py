@@ -19,8 +19,9 @@ def main(args):
     train_loader, val_loader = custom_data_loader.customDataloader(args)
 
     for epoch in range(args.start_epoch, args.epochs+1):
+        optimizer.step()
         scheduler.step()
-        recorder.insertRecord('train', 'lr', epoch, scheduler.get_lr()[0])
+        recorder.insertRecord('train', 'lr', epoch, scheduler.get_last_lr())
 
         train_utils.train(args, train_loader, model, criterion, optimizer, log, epoch, recorder)
         if epoch % args.save_intv == 0: 

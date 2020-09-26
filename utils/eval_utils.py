@@ -6,7 +6,12 @@ from matplotlib import cm
 def colorMap(diff):
     thres = 90
     diff_norm = np.clip(diff, 0, thres) / thres
+    # print('diff_norm:', diff_norm.shape)
     diff_cm = torch.from_numpy(cm.jet(diff_norm.numpy()))[:,:,:, :3]
+    # print('diff_cm:', diff_cm.shape)
+    # diff_norm: torch.Size([1, 320, 296])
+    # diff_cm: torch.Size([1, 320, 296, 3])
+
     return diff_cm.permute(0,3,1,2).clone().float()
 
 def calDirsAcc(gt_l, pred_l, data_batch=1):
@@ -23,33 +28,58 @@ def calIntsAcc(gt_i, pred_i, data_batch=1):
     pred_i  = pred_i.view(n, c, h, w)
     ref_int = gt_i[:, :3].repeat(1, gt_i.shape[1] // 3, 1, 1)
     gt_i  = gt_i / ref_int
-    scale = torch.gels(gt_i.view(-1, 1), pred_i.view(-1, 1))
+    scale = torch.lstsq(gt_i.view(-1, 1), pred_i.view(-1, 1))
     ints_ratio = (gt_i - scale[0][0] * pred_i).abs() / (gt_i + 1e-8)
     ints_error = torch.stack(ints_ratio.split(3, 1), 1).mean(2)
     return {'ints_ratio': ints_ratio.mean().item()}, ints_error.squeeze()
     
 def calNormalAcc(gt_n, pred_n, mask=None):
     """Tensor Dim: NxCxHxW"""
+    #print("normal:", gt_n.shape, pred_n.shape)
     dot_product = (gt_n * pred_n).sum(1).clamp(-1,1)
     error_map   = torch.acos(dot_product) # [-pi, pi]
     angular_map = error_map * 180.0 / math.pi
+    # print("angular_map:", angular_map.shape)
+    # print("mask:", mask.shape)
+    # print("mask.narrow(1, 0, 1):", mask.narrow(1, 0, 1).shape)
+    # print("mask.narrow(1, 0, 1).squeeze(1):", mask.narrow(1, 0, 1).squeeze(1).shape)
     angular_map = angular_map * mask.narrow(1, 0, 1).squeeze(1)
-
+    #print("angular_map:", angular_map.shape)
     valid = mask.narrow(1, 0, 1).sum()
+    #print("valid:", valid)
+    # angular_map: torch.Size([1, 208, 244])
+    # mask: torch.Size([1, 1, 208, 244])
+    # mask.narrow(1, 0, 1): torch.Size([1, 1, 208, 244])
+    # mask.narrow(1, 0, 1).squeeze(1): torch.Size([1, 208, 244])
+    # angular_map: torch.Size([1, 208, 244])
+    # valid: tensor(26421., device='cuda:0')
+    # print("mask.narrow(1, 0, 1).squeeze(1).byte():", 
+    #     mask.narrow(1, 0, 1).squeeze(1).byte().shape, 
+    #     mask.narrow(1, 0, 1).squeeze(1).byte().dtype)
+    # mask.narrow(1, 0, 1).squeeze(1).byte(): torch.Size([1, 288, 244]) torch.uint8
+    # print('mask.narrow(1, 0, 1).squeeze(1).byte():', mask.narrow(1, 0, 1).squeeze(1).byte()[0][0])
     ang_valid  = angular_map[mask.narrow(1, 0, 1).squeeze(1).byte()]
+    # print("ang_valid:", ang_valid.shape)
+    # ang_valid: torch.Size([57342])
     n_err_mean = ang_valid.sum() / valid
     n_err_med  = ang_valid.median()
     n_acc_11   = (ang_valid < 11.25).sum().float() / valid
     n_acc_30   = (ang_valid < 30).sum().float() / valid
     n_acc_45   = (ang_valid < 45).sum().float() / valid
+    # print("angular_map:", angular_map.shape)
+    # print("angular_mapsqueeze(1):", angular_map.squeeze(1).shape)
+    # angular_map: torch.Size([1, 244, 400])
+    # angular_mapsqueeze(1): torch.Size([1, 244, 400])
 
     angular_map = colorMap(angular_map.cpu().squeeze(1))
+    # angular_map: torch.Size([1, 3, 244, 400])
     value = {'n_err_mean': n_err_mean.item(), 
             'n_acc_11': n_acc_11.item(), 'n_acc_30': n_acc_30.item(), 'n_acc_45': n_acc_45.item()}
     angular_error_map = {'angular_map': angular_map}
     return value, angular_error_map
 
 def SphericalDirsToClass(dirs, cls_num):
+    # print(dirs[0], "--------", dirs[:,0])
     theta = torch.atan(dirs[:,0] / (dirs[:,2] + 1e-8)) 
     denom = torch.sqrt(dirs[:,0] * dirs[:,0] + dirs[:,2] * dirs[:,2])
     phi = torch.atan(dirs[:,1] / (denom + 1e-8))
@@ -57,6 +87,7 @@ def SphericalDirsToClass(dirs, cls_num):
     phi   = phi / np.pi * 180
     azimuth = ((theta + 90.0) / 180 * cls_num).clamp(0, cls_num-1).long()
     elevate = ((phi   + 90.0) / 180 * cls_num).clamp(0, cls_num-1).long()
+    # print("azimuth:", azimuth)
     return azimuth, elevate
 
 def SphericalClassToDirs(x_cls, y_cls, cls_num):

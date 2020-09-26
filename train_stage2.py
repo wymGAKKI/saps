@@ -1,7 +1,8 @@
 import torch
 from models import model_utils
 from utils  import eval_utils, time_utils
-
+from PIL import Image, ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 def train(args, loader, models, criterion, optimizers, log, epoch, recorder):
     models[1].train()
     models[0].eval()
@@ -13,10 +14,9 @@ def train(args, loader, models, criterion, optimizers, log, epoch, recorder):
         data = model_utils.parseData(args, sample, timer, 'train')
         input = model_utils.getInput(args, data)
         with torch.no_grad():
-            pred_c = models[0](input); 
+            pred_c = models[0](input);         
         input.append(pred_c)
-        pred = models[1](input); timer.updateTime('Forward')
-
+        pred = models[1](input); timer.updateTime('Forward')      
         optimizer.zero_grad()
 
         loss = criterion.forward(pred, data); 

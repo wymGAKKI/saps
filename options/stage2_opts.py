@@ -10,7 +10,7 @@ class TrainOpts(BaseOpts):
         self.parser.add_argument('--solver',      default='adam', help='adam|sgd')
         self.parser.add_argument('--milestones',  default=[2, 4, 6, 8, 10], nargs='+', type=int)
         self.parser.add_argument('--start_epoch', default=1,      type=int)
-        self.parser.add_argument('--epochs',      default=10,     type=int)
+        self.parser.add_argument('--epochs',      default=1,     type=int)
         self.parser.add_argument('--batch',       default=16,     type=int)
         self.parser.add_argument('--val_batch',   default=8,      type=int)
         self.parser.add_argument('--init_lr',     default=0.0005, type=float)

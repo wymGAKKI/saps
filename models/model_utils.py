@@ -4,6 +4,7 @@ import torch.nn as nn
 
 def getInput(args, data):
     input_list = [data['img']]
+    # print("getinput input_list:", len(input_list))  getinput input_list: 1
     if args.in_light: input_list.append(data['dirs'])
     if args.in_mask:  input_list.append(data['m'])
     return input_list
@@ -23,7 +24,7 @@ def parseData(args, sample, timer=None, split='train'):
         dirs, ints = dirs.cuda(), ints.cuda()
         if timer: timer.updateTime('ToGPU')
     data = {'img': img, 'n': normal, 'm': mask, 'dirs': dirs, 'ints': ints}
-    return data 
+    return data
 
 def getInputChanel(args):
     args.log.printWrite('[Network Input] Color image as input')

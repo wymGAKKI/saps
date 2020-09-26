@@ -17,6 +17,7 @@ class FeatExtractor(nn.Module):
         self.conv7 = model_utils.conv(batchNorm, 256,  256,   k=3, stride=1, pad=1)
 
     def forward(self, inputs):
+        #print("\n\n\n\ninput shape:\n\n\n\n", inputs.shape)
         out = self.conv1(inputs)
         out = self.conv2(out)
         out = self.conv3(out)
@@ -88,6 +89,7 @@ class LCNet(nn.Module):
             imgs = torch.nn.functional.upsample(x[0], size=(t_h, t_w), mode='bilinear')
 
         inputs = list(torch.split(imgs, 3, 1))
+        # print('inputs:', inputs[0].shape, 'len:', len(inputs))
         idx = 1
         if self.other['in_light']:
             light = torch.split(x[idx], 3, 1)
@@ -114,6 +116,8 @@ class LCNet(nn.Module):
         _, x_idx = pred['dirs_x'].data.max(1)
         _, y_idx = pred['dirs_y'].data.max(1)
         dirs = eval_utils.SphericalClassToDirs(x_idx, y_idx, self.other['dirs_cls'])
+        # dirs: torch.Size([8, 3])
+        # x_idx: torch.Size([8])
         return dirs
 
     def convertMidIntens(self, pred, img_num):
@@ -131,25 +135,39 @@ class LCNet(nn.Module):
             shape    = out_feat.data.shape
             feats.append(out_feat)
         feat_fused = self.fuseFeatures(feats, self.fuse_type)
+        
 
         l_dirs_x, l_dirs_y, l_ints = [], [], []
-        for i in range(len(inputs)):
+        for i in range(len(inputs)): 
             net_input = torch.cat([feats[i], feat_fused], 1)
             outputs = self.classifier(net_input)
             if self.other['s1_est_d']:
+                # print("outputs['dir_x']:", outputs['dir_x'].shape)
                 l_dirs_x.append(outputs['dir_x'])
                 l_dirs_y.append(outputs['dir_y'])
             if self.other['s1_est_i']:
                 l_ints.append(outputs['ints'])
+                # print("outputs['ints']:", outputs['ints'].shape)
 
         pred = {}
         if self.other['s1_est_d']:
+            # outputs['dir_x']: torch.Size([batch, self.other['dirs_cls'], 1, 1])
+            # outputs['ints']: torch.Size([batch, self.other['int_cls'], 1, 1])
+            # torch.cat(l_dirs_x, 0): torch.Size([batch * input_img, self.other['dirs_cls'], 1, 1])
+            # torch.cat(l_dirs_x, 0).squeeze(): torch.Size([batch * input_img, self.other['dirs_cls']])
             pred['dirs_x'] = torch.cat(l_dirs_x, 0).squeeze()
             pred['dirs_y'] = torch.cat(l_dirs_y, 0).squeeze()
             pred['dirs']   = self.convertMidDirs(pred)
+            # print("pred['dirs']:", pred['dirs'].shape)
         if self.other['s1_est_i']:
+            
             pred['ints'] = torch.cat(l_ints, 0).squeeze()
+            # print("pred['ints']:", pred['ints'].shape)
             if pred['ints'].ndimension() == 1:
                 pred['ints'] = pred['ints'].view(1, -1)
             pred['intens'] = self.convertMidIntens(pred, len(inputs))
+            print("pred['ints']:", pred['ints'].shape)
+            # pred['dirs']: torch.Size([8, 3])
+            # pred['intens']: torch.Size([4, 6])
+            # pred['ints']: torch.Size([8, 20])
         return pred

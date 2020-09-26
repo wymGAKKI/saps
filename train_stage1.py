@@ -1,5 +1,8 @@
 from models import model_utils
 from utils  import eval_utils, time_utils
+from PIL import Image, ImageFile
+import sys
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def train(args, loader, model, criterion, optimizer, log, epoch, recorder):
     model.train()
@@ -9,16 +12,12 @@ def train(args, loader, model, criterion, optimizer, log, epoch, recorder):
     for i, sample in enumerate(loader):
         data = model_utils.parseData(args, sample, timer, 'train')
         input = model_utils.getInput(args, data)
-
         pred = model(input); timer.updateTime('Forward')
-
         optimizer.zero_grad()
         loss = criterion.forward(pred, data); 
         timer.updateTime('Crit');
         criterion.backward(); timer.updateTime('Backward')
-
         recorder.updateIter('train', loss.keys(), loss.values())
-
         optimizer.step(); timer.updateTime('Solver')
 
         iters = i + 1

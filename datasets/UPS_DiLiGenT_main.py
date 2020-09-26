@@ -37,14 +37,22 @@ class UPS_DiLiGenT_main(data.Dataset):
     def __getitem__(self, index):
         np.random.seed(index)
         obj = self.objs[index]
-        select_idx = range(len(self.names))
 
+        # if self.args.partial_data:
+        #     select_idx = range(48, 96)
+        # else:
+        #     select_idx = range(48)
+
+        select_idx = range(len(self.names)-90)
+        #print('\n', self.args.partial_data)
         img_list = [os.path.join(self.root, obj, self.names[i]) for i in select_idx]
         ints = [np.diag(1 / self.ints[obj][i]) for i in select_idx]
         dirs = self.l_dir[select_idx]
 
         normal_path = os.path.join(self.root, obj, 'Normal_gt.mat')
         normal = sio.loadmat(normal_path)['Normal_gt']
+        # print('normal:', type(normal), normal.shape)
+        # normal: <class 'numpy.ndarray'> (172, 172, 3)
 
         imgs = []
         for idx, img_name in enumerate(img_list):
@@ -72,8 +80,11 @@ class UPS_DiLiGenT_main(data.Dataset):
 
         for k in item.keys(): 
             item[k] = pms_transforms.arrayToTensor(item[k])
-
+        
         item['dirs'] = torch.from_numpy(dirs).view(-1, 1, 1).float()
+        #print('\nIn Dataset:', item['img'].shape,type(item['img']))
+        # In Dataset: torch.Size([144, 244, 400]) Tensor
+
         item['ints'] = torch.from_numpy(self.ints[obj][select_idx]).view(-1, 1, 1).float()
 
         item['obj'] = obj

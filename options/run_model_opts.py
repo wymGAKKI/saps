@@ -19,7 +19,7 @@ class RunModelOpts(BaseOpts):
         self.parser.add_argument('--have_l_dirs', default=False, action='store_true', help='Have light directions?')
         self.parser.add_argument('--have_l_ints', default=False, action='store_true', help='Have light intensities?')
         self.parser.add_argument('--have_gt_n',   default=False, action='store_true', help='Have GT surface normals?')
-
+        self.parser.add_argument('--partial_data',   default=0, type=int)
     def collectInfo(self):
         self.args.str_keys  = ['model', 'model_s2', 'benchmark', 'fuse_type']
         self.args.val_keys  = ['in_img_num', 'test_h', 'test_w']

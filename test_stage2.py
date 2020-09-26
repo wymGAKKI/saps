@@ -23,15 +23,20 @@ def test(args, split, loader, models, log, epoch, recorder):
     res = []
     with torch.no_grad():
         for i, sample in enumerate(loader):
+            #print("\nIn for:", sample['mask'].shape)
+            #print("sample :", sample.keys())
             data = model_utils.parseData(args, sample, timer, split)
             input = model_utils.getInput(args, data)
-
+            
+            #input is a list
             pred_c = models[0](input); timer.updateTime('Forward')
             input.append(pred_c)
             pred = models[1](input); timer.updateTime('Forward')
-
+            #print("\npred:", len(pred))
+            #print("before prepareRes:", data.keys())
+            #print("data['img'].shape:", data['img'].shape)
             recoder, iter_res, error = prepareRes(args, data, pred_c, pred, recorder, log, split)
-
+            #print("data['img'].shape:", data['img'].shape)
             res.append(iter_res)
             iters = i + 1
             if iters % disp_intv == 0:
@@ -72,6 +77,7 @@ def prepareRes(args, data, pred_c, pred, recorder, log, split):
         error += 'I_%.3f-' % (int_acc['ints_ratio'])
 
     if args.s2_est_n:
+        #print("keys:",data.keys())
         acc, error_map = eval_utils.calNormalAcc(data['n'].data, pred['n'].data, data['m'].data)
         recorder.updateIter(split, acc.keys(), acc.values())
         iter_res.append(acc['n_err_mean'])
@@ -83,9 +89,17 @@ def prepareSave(args, data, pred_c, pred):
     results = [data['img'].data, data['m'].data, (data['n'].data+1) / 2]
     if args.s2_est_n:
         pred_n = (pred['n'].data + 1) / 2
+        # print('data["m"].data:', data['m'].data.shape)
+        # print('pred_n:', pred_n.shape)
+        # data["m"].data: torch.Size([1, 1, 208, 244])
+        # pred_n: torch.Size([1, 3, 208, 244])
         masked_pred = pred_n * data['m'].data.expand_as(pred['n'].data)
         res_n = [masked_pred, data['error_map']]
         results += res_n
 
     nrow = data['img'].shape[0]
+    # nrow = 4
+    # print("data['img'].shape:", data['img'].shape)
+    # data['img'].shape: torch.Size([1, 18, 244, 400])
+
     return results, nrow

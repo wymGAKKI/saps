@@ -30,7 +30,7 @@ class Stage1ClsCrit(object): # First Stage, Light classification criterion
         if self.s1_est_d:
             est_dir_x, est_dir_y = output['dirs_x'], output['dirs_y']
             gt_dir_x, gt_dir_y = eval_utils.SphericalDirsToClass(target['dirs'], self.dirs_cls)
-        
+            # print("est_dir_x:", est_dir_x.shape, "\ngt_dir_x:", gt_dir_x.shape)
             dirs_x_loss = self.dirs_x_crit(est_dir_x, gt_dir_x)
             dirs_y_loss = self.dirs_y_crit(est_dir_y, gt_dir_y)
 
@@ -43,11 +43,17 @@ class Stage1ClsCrit(object): # First Stage, Light classification criterion
             gt_ints = target['ints'].squeeze()[:, 0: target['ints'].shape[1]:3]
             gt_ints = torch.cat(torch.split(gt_ints, 1, 1), 0)
             gt_intens = eval_utils.LightIntsToClass(gt_ints, self.ints_cls)
+            # est_intens: torch.Size([8, 20])
+            # target['ints']: torch.Size([4, 6, 1, 1])
+            # gt_ints: torch.Size([4, 2])
+            # gt_ints: torch.Size([8, 1])
+            # gt_intens: torch.Size([8])
+
             ints_loss = self.ints_crit(est_intens, gt_intens)
             out_loss['I_loss'] = ints_loss.item()
             self.loss += self.ints_w * ints_loss
         return out_loss
-     
+
     def backward(self):
         self.loss.backward()
 

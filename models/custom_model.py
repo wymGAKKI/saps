@@ -24,6 +24,8 @@ def buildModel(args):
     if args.resume:
         args.log.printWrite("=> Resume loading checkpoint '{}'".format(args.resume))
         model_utils.loadCheckpoint(args.resume, model, cuda=args.cuda)
+    print('Model:')
+    print(type(model))
     print(model)
     args.log.printWrite("=> Model Parameters: %d" % (model_utils.get_n_params(model)))
     return model

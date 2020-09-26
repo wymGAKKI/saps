@@ -74,6 +74,13 @@ class UPS_Synth_Dataset(data.Dataset):
 
         item['dirs'] = torch.from_numpy(dirs).view(-1, 1, 1).float()
         item['ints'] = torch.from_numpy(ints).view(-1, 1, 1).float()
+        
+        # normal : torch.Size([3, 128, 128])
+        # img : torch.Size([6, 128, 128])
+        # mask : torch.Size([1, 128, 128])
+        # dirs : torch.Size([6, 1, 1])
+        # ints : torch.Size([6, 1, 1])
+
         return item
 
     def __len__(self):

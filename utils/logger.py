@@ -114,7 +114,7 @@ class Logger(object):
                 t_list[i] = tensor.expand((n, shape[1], h, w))
             if h == shape[2] and w == shape[3]:
                 continue
-            t_list[i] = torch.nn.functional.upsample(tensor, [shape[2], shape[3]], mode='bilinear')
+            t_list[i] = torch.nn.functional.interpolate(tensor, [shape[2], shape[3]], mode='bilinear')
         return t_list
 
     def getSaveDir(self, split, epoch):
@@ -130,9 +130,11 @@ class Logger(object):
         for tensor in t_list:
             if tensor.shape[1] > 3:
                 num = 3
+                #print("torch.split(tensor, num, 1)[:max_save_n]:", type(torch.split(tensor, num, 1)[:max_save_n]))
                 new_list += torch.split(tensor, num, 1)[:max_save_n]
             else:
                 new_list.append(tensor)
+        # print("new_list:", type(new_list))
         return new_list
 
     def saveSplit(self, res, save_prefix):
@@ -144,13 +146,19 @@ class Logger(object):
         max_save_n = self.args.test_save_n if split == 'test' else self.args.train_save_n
         res = [img.cpu() for img in results]
         res = self.splitMulitChannel(res, max_save_n)
+        #print('res:', type(res)):list
         res = torch.cat(self.convertToSameSize(res))
+        # print('res:', type(res)):tensor
+        # print('res:', res.shape)
+        # res: torch.Size([8, 3, 244, 400])
         save_dir = self.getSaveDir(split, epoch)
         save_prefix = os.path.join(save_dir, '%d_%d' % (epoch, iters))
         save_prefix += ('_%s' % error) if error != '' else ''
+        #print(save_prefix)
         if self.args.save_split: 
             self.saveSplit(res, save_prefix)
         else:
+            print(save_prefix + '_out.png')
             vutils.save_image(res, save_prefix + '_out.png', nrow=nrow)
 
     def plotCurves(self, recorder, split='train', epoch=-1, intv=1):

@@ -25,6 +25,7 @@ class FeatExtractor(nn.Module):
         out_feat = self.conv7(out)
         n, c, h, w = out_feat.data.shape
         out_feat   = out_feat.view(-1)
+        # out_feature: torch.Size([946688])
         return out_feat, [n, c, h, w]
 
 class Regressor(nn.Module):
@@ -39,7 +40,7 @@ class Regressor(nn.Module):
 
     def _make_output(self, cin, cout, k=3, stride=1, pad=1):
         return nn.Sequential(
-               nn.Conv2d(cin, cout, kernel_size=k, stride=stride, padding=pad, bias=False))
+            nn.Conv2d(cin, cout, kernel_size=k, stride=stride, padding=pad, bias=False))
 
     def forward(self, x, shape):
         x      = x.view(shape[0], shape[1], shape[2], shape[3])
@@ -75,7 +76,8 @@ class NENet(nn.Module):
         if self.other['in_mask']:  idx += 1
         dirs = torch.split(x[idx]['dirs'], x[0].shape[0], 0)
         ints = torch.split(x[idx]['intens'], 3, 1)
-        
+        # print("dirs:", dirs[0].shape)
+        # print("ints:", ints[0].shape)
         s2_inputs = []
         for i in range(len(imgs)):
             n, c, h, w = imgs[i].shape

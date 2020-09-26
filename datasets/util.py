@@ -1,5 +1,6 @@
 import numpy as np
 import re
+import torch
 
 def atoi(text):
     return int(text) if text.isdigit() else text
@@ -125,3 +126,12 @@ def light_source_directions():
                   [0.56620006, 0.26940003, 0.77900008],
                   [0.54551481, 0.36380988, 0.7550205]], dtype=float)
     return L
+
+if __name__ == '__main__':
+    l = light_source_directions()
+    select_idx = range(48)
+    dirs = l[select_idx]
+    l = torch.from_numpy(dirs).view(-1, 1, 1).float()
+    n,c,w,h = l.shape
+    # l = l.expand(288,128,128)
+    print(l.shape)

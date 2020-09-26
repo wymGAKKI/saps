@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=2 python main_stage1.py --in_img_num 32
