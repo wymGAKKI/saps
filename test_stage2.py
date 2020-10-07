@@ -78,7 +78,7 @@ def prepareRes(args, data, pred_c, pred, recorder, log, split):
 
     if args.s2_est_n:
         #print("keys:",data.keys())
-        acc, error_map = eval_utils.calNormalAcc(data['n'].data, pred['n'].data, data['m'].data)
+        acc, error_map = eval_utils.calNormalAcc(data['normal'].data, pred['normal'].data, data['mask'].data)
         recorder.updateIter(split, acc.keys(), acc.values())
         iter_res.append(acc['n_err_mean'])
         error += 'N_%.3f-' % (acc['n_err_mean'])
@@ -86,14 +86,14 @@ def prepareRes(args, data, pred_c, pred, recorder, log, split):
     return recorder, iter_res, error
 
 def prepareSave(args, data, pred_c, pred):
-    results = [data['img'].data, data['m'].data, (data['n'].data+1) / 2]
+    results = [data['img'].data, data['mask'].data, (data['normal'].data+1) / 2]
     if args.s2_est_n:
-        pred_n = (pred['n'].data + 1) / 2
+        pred_n = (pred['normal'].data + 1) / 2
         # print('data["m"].data:', data['m'].data.shape)
         # print('pred_n:', pred_n.shape)
         # data["m"].data: torch.Size([1, 1, 208, 244])
         # pred_n: torch.Size([1, 3, 208, 244])
-        masked_pred = pred_n * data['m'].data.expand_as(pred['n'].data)
+        masked_pred = pred_n * data['mask'].data.expand_as(pred['normal'].data)
         res_n = [masked_pred, data['error_map']]
         results += res_n
 

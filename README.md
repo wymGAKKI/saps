@@ -65,7 +65,7 @@ sh scripts/prepare_diligent_dataset.sh
 # the original images based on the object mask with a margin size of 15 pixels.
 
 # Test SDPS-Net on DiLiGenT main dataset using all of the 96 image
-CUDA_VISIBLE_DEVICES=0 python eval/run_stage2.py --retrain data/models/LCNet_CVPR2019.pth.tar --retrain_s2 data/models/NENet_CVPR2019.pth.tar
+CUDA_VISIBLE_DEVICES=0 python eval/run_stage2.py --retrain "/home/wym/code/SDPS-Net/data/models/LCNet_CVPR2019.pth.tar" --retrain_s2 "/home/wym/code/SDPS-Net/data/models/NENet_CVPR2019.pth.tar"
 # Please check the outputs in data/models/
 
 # If you only have CPUs, please add the argument "--cuda" to disable the usage of GPU

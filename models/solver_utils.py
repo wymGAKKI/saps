@@ -109,7 +109,7 @@ class Stage2Crit(object): # Second stage
             out_loss['I_loss'] = ints_loss.item()
 
         if self.s2_est_n:
-            n_est, n_tar = output['n'], target['n']
+            n_est, n_tar = output['normal'], target['normal']
             n_num = n_tar.nelement() // n_tar.shape[1]
             if not hasattr(self, 'n_flag') or n_num != self.n_flag.nelement():
                 self.n_flag = n_tar.data.new().resize_(n_num).fill_(1)
