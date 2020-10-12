@@ -89,29 +89,7 @@ class NENet(nn.Module):
             s2_inputs.append(img_light)
         return s2_inputs
     
-    def reconInputs(self, x):
-        imgs = torch.split(x[0], 3, 1)
-        idx = 1
-        if self.other['in_light']: idx += 1
-        if self.other['in_mask']:  idx += 1
-        dirs = torch.split(x[idx]['dirs'], x[0].shape[0], 0)
-        ints = torch.split(x[idx]['intens'], 3, 1)
-        # print("dirs:", dirs[0].shape) input_img_num (batch, 3)
-        # print("ints:", ints[0].shape) input_img_num (batch, 3)
-        s2_inputs = {}
-        lights = []
-        
-        for i in range(len(imgs)):
-            n, c, h, w = imgs[i].shape
-            lights.append(dirs[i].expand_as(imgs[i]) if dirs[i].dim() == 4 else dirs[i].view(n, -1, 1, 1).expand_as(imgs[i]))
-            
-        #     img   = imgs[i].contiguous().view(n * c, h * w)
-        #     img   = torch.mm(l_int, img).view(n, c, h, w)
-        light = torch.cat(lights, 1)
-
-        s2_inputs['lights'] = light
-        s2_inputs['ints'] = ints
-        return s2_inputs
+    
 
     def forward(self, x):
         inputs = self.prepareInputs(x)
@@ -132,28 +110,3 @@ class NENet(nn.Module):
         pred = {}
         pred['normal'] = normal
         return pred
-
-    def reconstruct(self, pred_nr, light, ints):
-        normal = pred_nr['normal']
-        n, c, h, w = normal.shape
-        # print('***************reflectance', pred_nr['reflectance'].max(), pred_nr['reflectance'].min())
-        reflectance = pred_nr['reflectance'] / 255.0
-        # normal, reflectance:[batch, 3, height, weight]
-        # light: [batch, 3*input_img, height, weight]
-        lights = torch.split(light, 3, 1)
-        recons = []
-        zeros = torch.zeros_like(reflectance)
-        for idx in range(len(lights)):
-            product = (lights[idx] * normal).sum(1, keepdim = True).expand_as(reflectance)
-            zeros = torch.zeros_like(product)
-            #print(product.dtype)
-            #maximam = torch.max(zeros, product)
-            maximam = torch.max(product, zeros)
-            img = maximam * reflectance
-            l_int = torch.diag(ints[idx].contiguous().view(-1))
-            img   = img.contiguous().view(n * c, h * w)
-            img   = torch.mm(l_int, img).view(n, c, h, w)
-            recons.append(img)
-        recon = torch.cat(recons, 1)
-        # print('recons:', recon.shape)
-        return recon

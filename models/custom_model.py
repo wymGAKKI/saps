@@ -51,3 +51,25 @@ def buildModelStage2(args):
     print(model)
     args.log.printWrite("=> Stage2 Model Parameters: %d" % (model_utils.get_n_params(model)))
     return model
+
+def buildModelStage3(args):
+    print('Creating Stage3 Model %s' % (args.model_s3))
+    in_c = 6 if args.s2_in_light else 3
+    other = {
+            'img_num':  args.in_img_num,
+            'in_mask':  args.in_mask,  'in_light': args.in_light, 
+            'dirs_cls': args.dirs_cls, 'ints_cls': args.ints_cls,
+            }
+    models = __import__('models.' + args.model_s3)
+    model_file = getattr(models, args.model_s3)
+    model = getattr(model_file, args.model_s3)(args.fuse_type, args.use_BN, in_c, other)
+
+    if args.cuda: model = model.cuda()
+
+    if args.retrain_s3: 
+        args.log.printWrite("=> using pre-trained model_s3 '{}'".format(args.retrain_s3))
+        model_utils.loadCheckpoint(args.retrain_s3, model, cuda=args.cuda)
+
+    print(model)
+    args.log.printWrite("=> Stage3 Model Parameters: %d" % (model_utils.get_n_params(model)))
+    return model

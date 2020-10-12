@@ -158,7 +158,7 @@ class Logger(object):
         if self.args.save_split: 
             self.saveSplit(res, save_prefix)
         else:
-            print(save_prefix + '_out.png')
+            # print(save_prefix + '_out.png')
             vutils.save_image(res, save_prefix + '_out.png', nrow=nrow)
 
     def plotCurves(self, recorder, split='train', epoch=-1, intv=1):

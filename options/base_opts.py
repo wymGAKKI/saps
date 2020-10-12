@@ -59,7 +59,9 @@ class BaseOpts(object):
         #### Stage 2 Model Arguments ####
         self.parser.add_argument('--stage2',      default=False, action='store_true')
         self.parser.add_argument('--model_s2',    default='NENet')
+        self.parser.add_argument('--model_s3',    default='RENet')
         self.parser.add_argument('--retrain_s2',  default=None)
+        self.parser.add_argument('--retrain_s3',  default=None)
         self.parser.add_argument('--s2_est_n',    default=True,  action='store_false')
         self.parser.add_argument('--s2_est_i',    default=False, action='store_true')
         self.parser.add_argument('--s2_est_d',    default=False, action='store_true')

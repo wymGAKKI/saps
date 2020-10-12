@@ -166,7 +166,7 @@ class LCNet(nn.Module):
             if pred['ints'].ndimension() == 1:
                 pred['ints'] = pred['ints'].view(1, -1)
             pred['intens'] = self.convertMidIntens(pred, len(inputs))
-            print("pred['ints']:", pred['ints'].shape)
+            # print("pred['ints']:", pred['ints'].shape)
             # pred['dirs']: torch.Size([8, 3])
             # pred['intens']: torch.Size([4, 6])
             # pred['ints']: torch.Size([8, 20])

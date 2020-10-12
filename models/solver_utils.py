@@ -159,3 +159,24 @@ def configOptimizer(args, model):
         args.start_epoch = start_epoch
     scheduler = getLrScheduler(args, optimizer)
     return optimizer, scheduler, records
+
+class Stage3Crit(object): 
+    def __init__(self, args):
+        self.s2_est_n = args.s2_est_n 
+        self.s2_est_d = args.s2_est_d
+        self.s2_est_i = args.s2_est_i
+        self.setupReflectCrit(args)
+    
+    def setupReflectCrit(self, args):
+        self.r_crit = torch.nn.MSELoss()
+    
+    def forward(self, output, target):
+        self.loss = 0
+        out_loss = {}
+        recon_loss = self.r_crit(output, target)
+        self.loss += recon_loss 
+        out_loss['recon_loss'] = recon_loss.item()
+        return out_loss
+
+    def backward(self):
+        self.loss.backward()

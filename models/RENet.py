@@ -4,8 +4,9 @@ from torch.nn.init import kaiming_normal_
 from . import model_utils
 
 class FeatExtractor(nn.Module):
-    def __init__(self, batchNorm=False, c_in=3, other={}):
+    def __init__(self, batchNorm=True, c_in=3, other={}):
         super(FeatExtractor, self).__init__()
+        # batchNorm=True
         self.other = other
         self.conv1 = model_utils.conv(batchNorm, c_in, 64,  k=3, stride=1, pad=1)
         self.conv2 = model_utils.conv(batchNorm, 64,   128, k=3, stride=2, pad=1)
@@ -29,7 +30,7 @@ class FeatExtractor(nn.Module):
         return out_feat, [n, c, h, w]
 
 class Regressor(nn.Module):
-    def __init__(self, batchNorm=False, other={}): 
+    def __init__(self, batchNorm=True, other={}): 
         super(Regressor, self).__init__()
         self.other   = other
         self.deconv1 = model_utils.conv(batchNorm, 128, 128,  k=3, stride=1, pad=1)
