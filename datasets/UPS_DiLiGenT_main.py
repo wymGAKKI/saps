@@ -43,7 +43,7 @@ class UPS_DiLiGenT_main(data.Dataset):
         # else:
         #     select_idx = range(48)
 
-        select_idx = range(len(self.names)-90)
+        select_idx = range(len(self.names))
         #print('\n', self.args.partial_data)
         img_list = [os.path.join(self.root, obj, self.names[i]) for i in select_idx]
         ints = [np.diag(1 / self.ints[obj][i]) for i in select_idx]

@@ -114,11 +114,11 @@ class Logger(object):
                 t_list[i] = tensor.expand((n, shape[1], h, w))
             if h == shape[2] and w == shape[3]:
                 continue
-            t_list[i] = torch.nn.functional.interpolate(tensor, [shape[2], shape[3]], mode='bilinear')
+            t_list[i] = torch.nn.functional.upsample(tensor, [shape[2], shape[3]], mode='bilinear')
         return t_list
 
-    def getSaveDir(self, split, epoch):
-        save_dir = os.path.join(self.args.log_dir, split, 'Images')
+    def getSaveDir(self, split, epoch, save_type):
+        save_dir = os.path.join(self.args.log_dir, split, save_type)
         run_model = hasattr(self.args, 'run_model') and self.args.run_model
         if not run_model and epoch > 0:
             save_dir = os.path.join(save_dir, str(epoch))
@@ -151,7 +151,7 @@ class Logger(object):
         # print('res:', type(res)):tensor
         # print('res:', res.shape)
         # res: torch.Size([8, 3, 244, 400])
-        save_dir = self.getSaveDir(split, epoch)
+        save_dir = self.getSaveDir(split, epoch, "Image")
         save_prefix = os.path.join(save_dir, '%d_%d' % (epoch, iters))
         save_prefix += ('_%s' % error) if error != '' else ''
         #print(save_prefix)
@@ -191,3 +191,28 @@ class Logger(object):
         plt.tight_layout()
         plt.savefig(os.path.join(save_dir, save_name))
         plt.clf()
+
+    def saveMatResults(self, pred_n, gt_n, pred_l, gt_l, split, epoch, iters, nrow, error=''):
+        # batch = 4, in_img_num = 8
+        # pred_n torch.Size([4, 3, 128, 128])
+        # gt_n torch.Size([4, 3, 128, 128])
+        # pred_l torch.Size([32, 3])
+        # gt_l torch.Size([32, 3])
+        pred_n = self.tensorToArray(pred_n)
+        gt_n = self.tensorToArray(gt_n)
+        pred_l = self.tensorToArray(pred_l)
+        gt_l = self.tensorToArray(gt_l)
+        save_dir = self.getSaveDir(split, epoch, "Mat")
+        save_prefix = os.path.join(save_dir, '%d_%d' % (epoch, iters))
+        save_prefix += ('_%s' % error) if error != '' else ''
+        #print(save_prefix)
+        normal_path = save_prefix + '_normal.mat'
+        light_path = save_prefix + '_light.mat'
+        sio.savemat(normal_path, {'pred': pred_n, 'gt': gt_n})
+        sio.savemat(light_path, {'pred': pred_l, 'gt': gt_l})
+
+    def tensorToArray(self, tensor):
+        array = tensor.data.cpu().numpy()
+        if tensor.dim() == 4:
+            array = np.transpose(array, (0, 2, 3, 1))
+        return array

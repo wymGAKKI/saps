@@ -20,7 +20,7 @@ args = parser.parse_args()
 
 def getSaveDir():
     dirName  = os.path.dirname(args.input_dir)
-    save_dir = '%s_%s' % (args.input_dir, args.suffix) 
+    save_dir = '%s_%s' % (args.input_dir, args.suffix)
     utils.makeFile(save_dir)
     print('Output dir: %s\n' % save_dir)
     return save_dir

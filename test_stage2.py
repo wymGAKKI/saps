@@ -47,6 +47,7 @@ def test(args, split, loader, models, log, epoch, recorder):
             if iters % save_intv == 0:
                 results, nrow = prepareSave(args, data, pred_c, pred)
                 log.saveImgResults(results, split, epoch, iters, nrow=nrow, error='')
+                log.saveMatResults(pred['normal'], data['normal'], pred_c['dirs'], data['dirs'], split, epoch, iters, nrow=nrow, error='')
                 log.plotCurves(recorder, split, epoch=epoch, intv=disp_intv)
 
             if stop_iters > 0 and iters >= stop_iters: break

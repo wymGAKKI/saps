@@ -43,8 +43,8 @@ def train(args, loader, models, criterion, optimizers, log, epoch, recorder):
     log.printEpochSummary(opt)
 
 def prepareSave(args, data, pred_c, pred, recorder, log):
-    input_var, mask_var = data['img'], data['m']
-    results = [input_var.data, mask_var.data, (data['n'].data+1)/2]
+    input_var, mask_var = data['img'], data['mask']
+    results = [input_var.data, mask_var.data, (data['normal'].data+1)/2]
     if args.s1_est_d:
         l_acc, data['dir_err'] = eval_utils.calDirsAcc(data['dirs'].data, pred_c['dirs'].data, args.batch)
         recorder.updateIter('train', l_acc.keys(), l_acc.values())
@@ -53,9 +53,9 @@ def prepareSave(args, data, pred_c, pred, recorder, log):
         recorder.updateIter('train', int_acc.keys(), int_acc.values())
 
     if args.s2_est_n:
-        acc, error_map = eval_utils.calNormalAcc(data['n'].data, pred['n'].data, mask_var.data)
-        pred_n = (pred['n'].data + 1) / 2
-        masked_pred = pred_n * mask_var.data.expand_as(pred['n'].data)
+        acc, error_map = eval_utils.calNormalAcc(data['normal'].data, pred['normal'].data, mask_var.data)
+        pred_n = (pred['normal'].data + 1) / 2
+        masked_pred = pred_n * mask_var.data.expand_as(pred['normal'].data)
         res_n = [masked_pred, error_map['angular_map']]
         results += res_n
         recorder.updateIter('train', acc.keys(), acc.values())

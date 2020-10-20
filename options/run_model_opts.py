@@ -9,7 +9,7 @@ class RunModelOpts(BaseOpts):
         #### Testing Dataset Arguments #### 
         self.parser.add_argument('--run_model',  default=True, action='store_false')
         self.parser.add_argument('--benchmark',  default='UPS_DiLiGenT_main')
-        self.parser.add_argument('--bm_dir',     default='data/datasets/DiLiGenT/pmsData_crop')
+        self.parser.add_argument('--bm_dir',     default='/mnt/data/CyclePS/datasets/DiLiGenT/pmsData_crop')
         self.parser.add_argument('--epochs',     default=1,   type=int)
         self.parser.add_argument('--test_batch', default=1,   type=int)
         self.parser.add_argument('--test_disp',  default=1,   type=int)

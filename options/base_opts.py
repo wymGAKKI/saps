@@ -9,8 +9,10 @@ class BaseOpts(object):
     def initialize(self):
         #### Trainining Dataset ####
         self.parser.add_argument('--dataset',     default='UPS_Synth_Dataset')
-        self.parser.add_argument('--data_dir',    default='data/datasets/PS_Blobby_Dataset')
-        self.parser.add_argument('--data_dir2',   default='data/datasets/PS_Sculpture_Dataset')
+        self.parser.add_argument('--data_dir',    default='/mnt/data/CyclePS/datasets/PS_Blobby_Dataset')
+        self.parser.add_argument('--data_dir2',   default='/mnt/data/CyclePS/datasets/PS_Sculpture_Dataset')
+        self.parser.add_argument('--data_dir3',   default="/mnt/data/CyclePS/datasets/PRPS_Diffuse")
+        self.parser.add_argument('--data_dir4',   default="/mnt/data/CyclePS/datasets/PRPS")
         self.parser.add_argument('--concat_data', default=True, action='store_false')
         self.parser.add_argument('--l_suffix',    default='_mtrl.txt')
 
@@ -58,6 +60,7 @@ class BaseOpts(object):
 
         #### Stage 2 Model Arguments ####
         self.parser.add_argument('--stage2',      default=False, action='store_true')
+        self.parser.add_argument('--stage3',      default=False, action='store_true')
         self.parser.add_argument('--model_s2',    default='NENet')
         self.parser.add_argument('--model_s3',    default='RENet')
         self.parser.add_argument('--retrain_s2',  default=None)
@@ -105,7 +108,7 @@ class BaseOpts(object):
                 ]
         self.args.bool_keys = [
                 'use_BN', 'in_light', 'in_mask', 's1_est_n', 's1_est_d', 's1_est_i', 
-                'color_aug', 'int_aug', 'concat_data', 'retrain', 'resume', 'stage2', 
+                'color_aug', 'int_aug', 'concat_data', 'retrain', 'resume', 'stage2', 'stage3'
                 ] 
 
     def parse(self):
