@@ -26,6 +26,17 @@ def parseData(args, sample, timer=None, split='train'):
     data = {'img': img, 'normal': normal, 'mask': mask, 'dirs': dirs, 'ints': ints}
     return data
 
+def parseshadowData(args, sample, timer=None, split='train'):
+    normal, shadow ,mask = sample['normal'], sample['shadow'], sample['mask']
+    light = sample['light'].expand_as(normal)
+    if timer: timer.updateTime('ToCPU')
+    if args.cuda:
+        normal, shadow ,mask= normal.cuda(), shadow.cuda(), mask.cuda()
+        light= light.cuda()
+        if timer: timer.updateTime('ToGPU')
+    data = {'normal': normal, 'shadow': shadow, 'light': light, 'mask': mask}
+    return data
+
 def getInputChanel(args):
     args.log.printWrite('[Network Input] Color image as input')
     c_in = 3

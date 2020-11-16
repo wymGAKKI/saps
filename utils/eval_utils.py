@@ -2,6 +2,7 @@ import torch
 import math
 import numpy as np
 from matplotlib import cm
+from imageio import imread, imwrite
 
 def colorMap(diff):
     thres = 90
@@ -18,7 +19,6 @@ def calDirsAcc(gt_l, pred_l, data_batch=1):
     n, c = gt_l.shape
     pred_l = pred_l.view(n, c)
     dot_product = (gt_l * pred_l).sum(1).clamp(-1, 1)
-    
     angular_err = torch.acos(dot_product) * 180.0 / math.pi
     l_err_mean  = angular_err.mean()
     return {'l_err_mean': l_err_mean.item()}, angular_err.squeeze()
@@ -39,25 +39,9 @@ def calNormalAcc(gt_n, pred_n, mask=None):
     dot_product = (gt_n * pred_n).sum(1).clamp(-1,1)
     error_map   = torch.acos(dot_product) # [-pi, pi]
     angular_map = error_map * 180.0 / math.pi
-    # print("angular_map:", angular_map.shape)
-    # print("mask:", mask.shape)
-    # print("mask.narrow(1, 0, 1):", mask.narrow(1, 0, 1).shape)
-    # print("mask.narrow(1, 0, 1).squeeze(1):", mask.narrow(1, 0, 1).squeeze(1).shape)
     angular_map = angular_map * mask.narrow(1, 0, 1).squeeze(1)
     #print("angular_map:", angular_map.shape)
     valid = mask.narrow(1, 0, 1).sum()
-    #print("valid:", valid)
-    # angular_map: torch.Size([1, 208, 244])
-    # mask: torch.Size([1, 1, 208, 244])
-    # mask.narrow(1, 0, 1): torch.Size([1, 1, 208, 244])
-    # mask.narrow(1, 0, 1).squeeze(1): torch.Size([1, 208, 244])
-    # angular_map: torch.Size([1, 208, 244])
-    # valid: tensor(26421., device='cuda:0')
-    # print("mask.narrow(1, 0, 1).squeeze(1).byte():", 
-    #     mask.narrow(1, 0, 1).squeeze(1).byte().shape, 
-    #     mask.narrow(1, 0, 1).squeeze(1).byte().dtype)
-    # mask.narrow(1, 0, 1).squeeze(1).byte(): torch.Size([1, 288, 244]) torch.uint8
-    # print('mask.narrow(1, 0, 1).squeeze(1).byte():', mask.narrow(1, 0, 1).squeeze(1).byte()[0][0])
     ang_valid  = angular_map[mask.narrow(1, 0, 1).squeeze(1).byte()]
     # print("ang_valid:", ang_valid.shape)
     # ang_valid: torch.Size([57342])
@@ -66,15 +50,26 @@ def calNormalAcc(gt_n, pred_n, mask=None):
     n_acc_11   = (ang_valid < 11.25).sum().float() / valid
     n_acc_30   = (ang_valid < 30).sum().float() / valid
     n_acc_45   = (ang_valid < 45).sum().float() / valid
-    # print("angular_map:", angular_map.shape)
-    # print("angular_mapsqueeze(1):", angular_map.squeeze(1).shape)
-    # angular_map: torch.Size([1, 244, 400])
-    # angular_mapsqueeze(1): torch.Size([1, 244, 400])
-
     angular_map = colorMap(angular_map.cpu().squeeze(1))
     # angular_map: torch.Size([1, 3, 244, 400])
     value = {'n_err_mean': n_err_mean.item(), 
             'n_acc_11': n_acc_11.item(), 'n_acc_30': n_acc_30.item(), 'n_acc_45': n_acc_45.item()}
+    angular_error_map = {'angular_map': angular_map}
+    return value, angular_error_map
+
+def calShadowAcc(gt_shadow, pred_shadow, mask=None):
+    """Tensor Dim: NxCxHxW"""
+    mask = mask.unsqueeze(1)
+    error_map   = torch.abs(gt_shadow - pred_shadow)
+    valid = mask.bool().sum()
+    #print("valid:", valid, "mask.shape:", mask.shape)
+    ang_valid  = error_map[mask.bool()]
+    #print("ang_valid:", ang_valid.shape, "ang_valid.sum():", ang_valid.sum())
+    #angular_map = colorMap(error_map.cpu().squeeze(1))
+    angular_map = error_map
+    n_err_mean = ang_valid.sum() / valid
+    # angular_map: torch.Size([1, 3, 244, 400])
+    value = {'shadow_err_mean': n_err_mean.item()}
     angular_error_map = {'angular_map': angular_map}
     return value, angular_error_map
 

@@ -13,7 +13,7 @@ def natural_keys(text):
     '''
     return [ atoi(c) for c in re.split('(\d+)', text) ]
 
-def readList(list_path,ignore_head=False, sort=True):
+def readList(list_path,ignore_head=False, sort=False):
     lists = []
     with open(list_path) as f:
         lists = f.read().splitlines()

@@ -73,3 +73,21 @@ def buildModelStage3(args):
     print(model)
     args.log.printWrite("=> Stage3 Model Parameters: %d" % (model_utils.get_n_params(model)))
     return model
+
+def buildModelStage0(args):
+    print('Creating Stage3 Model %s' % (args.model_s0))
+    in_c = 6
+    other = {
+            'img_num':  args.in_img_num,
+            'in_mask':  args.in_mask,  'in_light': args.in_light, 
+            'dirs_cls': args.dirs_cls, 'ints_cls': args.ints_cls,
+            }
+    models = __import__('models.' + args.model_s0)
+    model_file = getattr(models, args.model_s0)
+    model = getattr(model_file, args.model_s0)(args.use_BN, in_c, other)
+
+    if args.cuda: model = model.cuda()
+
+    print(model)
+    args.log.printWrite("=> Stage3 Model Parameters: %d" % (model_utils.get_n_params(model)))
+    return model

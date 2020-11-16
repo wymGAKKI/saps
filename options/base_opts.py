@@ -11,8 +11,8 @@ class BaseOpts(object):
         self.parser.add_argument('--dataset',     default='UPS_Synth_Dataset')
         self.parser.add_argument('--data_dir',    default='/mnt/data/CyclePS/datasets/PS_Blobby_Dataset')
         self.parser.add_argument('--data_dir2',   default='/mnt/data/CyclePS/datasets/PS_Sculpture_Dataset')
-        self.parser.add_argument('--data_dir3',   default="/mnt/data/CyclePS/datasets/PRPS_Diffuse")
-        self.parser.add_argument('--data_dir4',   default="/mnt/data/CyclePS/datasets/PRPS")
+        self.parser.add_argument('--shadowdataset',     default='ShadowDataset')
+        self.parser.add_argument('--shadowdata_dir',    default='/mnt/data/CyclePS/datasets/ShadowDataset')
         self.parser.add_argument('--concat_data', default=True, action='store_false')
         self.parser.add_argument('--l_suffix',    default='_mtrl.txt')
 
@@ -63,6 +63,7 @@ class BaseOpts(object):
         self.parser.add_argument('--stage3',      default=False, action='store_true')
         self.parser.add_argument('--model_s2',    default='NENet')
         self.parser.add_argument('--model_s3',    default='RENet')
+        self.parser.add_argument('--model_s0',    default='CSNet')
         self.parser.add_argument('--retrain_s2',  default=None)
         self.parser.add_argument('--retrain_s3',  default=None)
         self.parser.add_argument('--s2_est_n',    default=True,  action='store_false')
@@ -72,7 +73,7 @@ class BaseOpts(object):
 
         #### Displaying Arguments ####
         self.parser.add_argument('--train_disp',    default=20,  type=int)
-        self.parser.add_argument('--train_save',    default=200, type=int)
+        self.parser.add_argument('--train_save',    default=2, type=int)
         self.parser.add_argument('--val_intv',      default=1,   type=int)
         self.parser.add_argument('--val_disp',      default=1,   type=int)
         self.parser.add_argument('--val_save',      default=1,   type=int)

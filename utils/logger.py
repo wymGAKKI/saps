@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import torchvision.utils as vutils
 import scipy.io as sio
+from imageio import imread, imwrite
 from . import utils
 
 import matplotlib; matplotlib.use('agg')
@@ -155,11 +156,18 @@ class Logger(object):
         save_prefix = os.path.join(save_dir, '%d_%d' % (epoch, iters))
         save_prefix += ('_%s' % error) if error != '' else ''
         #print(save_prefix)
-        if self.args.save_split: 
-            self.saveSplit(res, save_prefix)
-        else:
-            # print(save_prefix + '_out.png')
-            vutils.save_image(res, save_prefix + '_out.png', nrow=nrow)
+        #print("vutils.save_image(res, save_prefix + '_out.png', nrow=nrow)", res[0].shape, res[1].shape)
+        vutils.save_image(res, save_prefix + '.png', nrow=nrow)
+        #vutils.save_image(res[1], save_prefix + '_pred.png', nrow=nrow)
+
+    def saveShadowResults(self, results, split, epoch, iters, nrow, error=''):
+        #res = [img.permute(0, 2 ,3 ,1) for img in results]
+        res = [img.cpu() for img in results]
+        save_dir = self.getSaveDir(split, epoch, "Image")
+        save_prefix = os.path.join(save_dir, '%d_%d' % (epoch, iters))
+        save_prefix += ('_%s' % error) if error != '' else ''
+        vutils.save_image(res[0], save_prefix + '_gt.png', nrow=nrow, normalize=True)
+        vutils.save_image(res[1], save_prefix + '_pred.png', nrow=nrow, normalize=True)
 
     def plotCurves(self, recorder, split='train', epoch=-1, intv=1):
         dict_of_array = recorder.recordToDictOfArray(split, epoch, intv)
