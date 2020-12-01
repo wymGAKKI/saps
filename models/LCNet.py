@@ -135,7 +135,7 @@ class LCNet(nn.Module):
             shape    = out_feat.data.shape
             feats.append(out_feat)
         feat_fused = self.fuseFeatures(feats, self.fuse_type)
-        
+
 
         l_dirs_x, l_dirs_y, l_ints = [], [], []
         for i in range(len(inputs)): 

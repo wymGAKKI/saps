@@ -1,6 +1,10 @@
+from __future__ import division
 import os
 import torch
 import torch.nn as nn
+import scipy.io as sio
+import torchvision.utils as vutils
+import numpy as np
 
 def getInput(args, data):
     input_list = [data['img']]
@@ -27,14 +31,17 @@ def parseData(args, sample, timer=None, split='train'):
     return data
 
 def parseshadowData(args, sample, timer=None, split='train'):
-    normal, shadow ,mask = sample['normal'], sample['shadow'], sample['mask']
+    normal, img, shadow ,mask = sample['normal'],sample['img'], sample['shadow'], sample['mask']
     light = sample['light'].expand_as(normal)
+    mask = mask.unsqueeze(1)
+
+
     if timer: timer.updateTime('ToCPU')
     if args.cuda:
-        normal, shadow ,mask= normal.cuda(), shadow.cuda(), mask.cuda()
+        normal, img, shadow ,mask= normal.cuda(),img.cuda(), shadow.cuda(), mask.cuda()
         light= light.cuda()
         if timer: timer.updateTime('ToGPU')
-    data = {'normal': normal, 'shadow': shadow, 'light': light, 'mask': mask}
+    data = {'normal': normal, 'img':img, 'shadow': shadow, 'light': light, 'mask': mask}
     return data
 
 def getInputChanel(args):

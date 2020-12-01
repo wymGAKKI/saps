@@ -59,7 +59,7 @@ def calNormalAcc(gt_n, pred_n, mask=None):
 
 def calShadowAcc(gt_shadow, pred_shadow, mask=None):
     """Tensor Dim: NxCxHxW"""
-    mask = mask.unsqueeze(1)
+    #mask = mask.unsqueeze(1)
     error_map   = torch.abs(gt_shadow - pred_shadow)
     valid = mask.bool().sum()
     #print("valid:", valid, "mask.shape:", mask.shape)

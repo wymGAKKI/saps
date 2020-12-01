@@ -70,7 +70,8 @@ class CSNet(nn.Module):
     def prepareInputs(self, x):
         normal = x['normal']
         light = x['light']
-        img_light = torch.cat([normal, light], 1)
+        img = x['img']
+        img_light = torch.cat([normal, light, img], 1)
         return img_light
 
     def forward(self, x):

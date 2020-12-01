@@ -12,14 +12,14 @@ def train(args, loader, model, criterion, optimizer, log, epoch, recorder):
 
     for i, sample in enumerate(loader):
         input = model_utils.parseshadowData(args, sample, timer, 'train')
-        pred = model(input); timer.updateTime('Forward')
         optimizer.zero_grad()
-        loss = criterion.forward(pred['shadow'], input['shadow']); 
+        pred = model(input); timer.updateTime('Forward')
+        
+        loss = criterion.forward(255*pred['shadow'], 255*input['shadow']); 
         timer.updateTime('Crit');
         criterion.backward(); timer.updateTime('Backward')
         recorder.updateIter('train', loss.keys(), loss.values())
         optimizer.step(); timer.updateTime('Solver')
-
         iters = i + 1
         if iters % args.train_disp == 0:
             opt = {'split':'train', 'epoch':epoch, 'iters':iters, 'batch':len(loader), 

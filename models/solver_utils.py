@@ -1,6 +1,10 @@
+from __future__ import division
 import torch
 import os
 from utils import eval_utils
+import numpy as np
+#from scipy.ndimage import imread
+import scipy.io as sio
 
 class Stage1ClsCrit(object): # First Stage, Light classification criterion
     def __init__(self, args):
@@ -157,6 +161,13 @@ def configOptimizer(args, model):
         args.log.printWrite("=> Resume loading checkpoint '{}'".format(args.resume))
         records, start_epoch = loadRecords(args.resume, model, optimizer)
         args.start_epoch = start_epoch
+    scheduler = getLrScheduler(args, optimizer)
+    return optimizer, scheduler, records
+
+def configMultiOptimizer(args, model):
+    records = None
+    paras = list(model[0].parameters()) + list(model[1].parameters()) + list(model[2].parameters()) + list(model[3].parameters())
+    optimizer = getOptimizer(args, paras)
     scheduler = getLrScheduler(args, optimizer)
     return optimizer, scheduler, records
 

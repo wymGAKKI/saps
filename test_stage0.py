@@ -42,7 +42,7 @@ def test(args, split, loader, model, log, epoch, recorder):
             if stop_iters > 0 and iters >= stop_iters: break
     res = np.vstack([np.array(res), np.array(res).mean(0)])
     save_name = '%s_res.txt' % (args.suffix)
-    np.savetxt(os.path.join(args.log_dir, "shadow",split, save_name), res, fmt='%.2f')
+    #np.savetxt(os.path.join(args.log_dir, "shadow",split, save_name), res, fmt='%.2f')
     opt = {'split': split, 'epoch': epoch, 'recorder': recorder}
     log.printEpochSummary(opt)
 
@@ -50,7 +50,6 @@ def prepareRes(args, data, pred, recorder, log, split):
     data_batch = args.val_batch if split == 'val' else args.test_batch
     iter_res = []
     error = ''
-    mask = (torch.square(data['normal']).sum(0, keepdims=True) > 1e-2)
     acc, error_map = eval_utils.calShadowAcc(data['shadow'].data, pred['shadow'].data, data['mask'].data)
     recorder.updateIter(split, acc.keys(), acc.values())
     iter_res.append(acc['shadow_err_mean'])

@@ -76,7 +76,7 @@ def buildModelStage3(args):
 
 def buildModelStage0(args):
     print('Creating Stage3 Model %s' % (args.model_s0))
-    in_c = 6
+    in_c = 9
     other = {
             'img_num':  args.in_img_num,
             'in_mask':  args.in_mask,  'in_light': args.in_light, 
@@ -85,6 +85,9 @@ def buildModelStage0(args):
     models = __import__('models.' + args.model_s0)
     model_file = getattr(models, args.model_s0)
     model = getattr(model_file, args.model_s0)(args.use_BN, in_c, other)
+    if args.retrain_s0: 
+        args.log.printWrite("=> using pre-trained model_s3 '{}'".format(args.retrain_s0))
+        model_utils.loadCheckpoint(args.retrain_s0, model, cuda=args.cuda)
 
     if args.cuda: model = model.cuda()
 

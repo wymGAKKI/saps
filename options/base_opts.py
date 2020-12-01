@@ -66,6 +66,7 @@ class BaseOpts(object):
         self.parser.add_argument('--model_s0',    default='CSNet')
         self.parser.add_argument('--retrain_s2',  default=None)
         self.parser.add_argument('--retrain_s3',  default=None)
+        self.parser.add_argument('--retrain_s0',  default=None)
         self.parser.add_argument('--s2_est_n',    default=True,  action='store_false')
         self.parser.add_argument('--s2_est_i',    default=False, action='store_true')
         self.parser.add_argument('--s2_est_d',    default=False, action='store_true')

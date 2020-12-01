@@ -42,6 +42,7 @@ class TrainOpts(BaseOpts):
         BaseOpts.setDefault(self)
         if self.args.test_h != self.args.crop_h:
             self.args.test_h, self.args.test_w = self.args.crop_h, self.args.crop_w
+        self.args.item = "Light"
         self.collectInfo()
 
     def parse(self):

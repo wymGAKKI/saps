@@ -70,6 +70,8 @@ class NENet(nn.Module):
                 m.bias.data.zero_()
 
     def prepareInputs(self, x):
+        #input: list [data['img'], data['mask'], pred_c: {'dirs_x', 'dirs_y', 'dirs', 'ints', 'intens'} ]
+        #pred_c{'dirs'}: [in_img_num*batch, 1, 1]
         imgs = torch.split(x[0], 3, 1)
         idx = 1
         if self.other['in_light']: idx += 1

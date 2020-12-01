@@ -19,7 +19,7 @@ def main(args):
     train_loader, val_loader = custom_data_loader.shadowDataloader(args)
 
     for epoch in range(args.start_epoch, args.epochs+1):
-        optimizer.step()
+        #optimizer.step()
         scheduler.step()
         recorder.insertRecord('train', 'lr', epoch, scheduler.get_last_lr())
 

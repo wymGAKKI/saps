@@ -8,12 +8,12 @@ class TrainOpts(BaseOpts):
         BaseOpts.initialize(self)
         #### Training Arguments ####
         self.parser.add_argument('--solver',      default='adam', help='adam|sgd')
-        self.parser.add_argument('--milestones',  default=[10, 20, 30, 40], nargs='+', type=int)
+        self.parser.add_argument('--milestones',  default=[5, 10, 15, 20], nargs='+', type=int)
         self.parser.add_argument('--start_epoch', default=1,      type=int)
-        self.parser.add_argument('--epochs',      default=50,     type=int)
+        self.parser.add_argument('--epochs',      default=30,     type=int)
         self.parser.add_argument('--batch',       default=8,     type=int)
         self.parser.add_argument('--val_batch',   default=8,      type=int)
-        self.parser.add_argument('--init_lr',     default=0.0005, type=float)
+        self.parser.add_argument('--init_lr',     default=0.00005, type=float)
         self.parser.add_argument('--lr_decay',    default=0.5,    type=float)
         self.parser.add_argument('--beta_1',      default=0.9,    type=float, help='adam')
         self.parser.add_argument('--beta_2',      default=0.999,  type=float, help='adam')
@@ -42,6 +42,7 @@ class TrainOpts(BaseOpts):
         BaseOpts.setDefault(self)
         if self.args.test_h != self.args.crop_h:
             self.args.test_h, self.args.test_w = self.args.crop_h, self.args.crop_w
+        self.args.item = "Shadow"
         self.collectInfo()
 
     def parse(self):
