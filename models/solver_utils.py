@@ -184,9 +184,9 @@ class Stage3Crit(object):
     def forward(self, output, target):
         self.loss = 0
         out_loss = {}
-        recon_loss = self.r_crit(output, target)
-        self.loss += recon_loss 
-        out_loss['recon_loss'] = recon_loss.item()
+        reflectance_loss = self.r_crit(output, target)
+        self.loss += reflectance_loss 
+        out_loss['reflectance_loss'] = reflectance_loss.item()
         return out_loss
 
     def backward(self):
@@ -205,6 +205,24 @@ class Stage0Crit(object):
         loss = self.r_crit(output, target)
         self.loss += loss 
         out_loss['loss'] = loss.item()
+        return out_loss
+
+    def backward(self):
+        self.loss.backward()
+
+class Stage4Crit(object): 
+    def __init__(self, args):
+        self.setupReconCrit(args)
+    
+    def setupReconCrit(self, args):
+        self.r_crit = torch.nn.MSELoss()
+    
+    def forward(self, output, target):
+        self.loss = 0
+        out_loss = {}
+        recon_loss = self.r_crit(output, target)
+        self.loss += recon_loss 
+        out_loss['recon_loss'] = recon_loss.item()
         return out_loss
 
     def backward(self):

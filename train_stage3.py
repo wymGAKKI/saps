@@ -3,31 +3,18 @@ from models import model_utils
 from utils  import eval_utils, time_utils
 from PIL import Image, ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-def train(args, loader, models, criterion, optimizers, log, epoch, recorder):
-    models[1].eval()
-    models[0].eval()
-    models[2].train()
+def train(args, loader, model, criterion, optimizers, log, epoch, recorder):
+    model.train()
     optimizer, optimizer_c = optimizers
     log.printWrite('---- Start Training Epoch %d: %d batches ----' % (epoch, len(loader)))
     timer = time_utils.Timer(args.time_sync);
 
     for i, sample in enumerate(loader):
-        data = model_utils.parseData(args, sample, timer, 'train')
-        input = model_utils.getInput(args, data)
-        with torch.no_grad():
-            pred_c = models[0](input);         
-        input.append(pred_c)
-        pred_n = models[1](input); timer.updateTime('Forward')    
-        pred_r =  models[2](input)
+        input = model_utils.parseReflectanceData(args, sample, timer, 'train')
+        pred_r =  model(input); timer.updateTime('Forward')    
         optimizer.zero_grad()
 
-        recon_inputs = reconInputs(args, input)
-        lights = recon_inputs['lights']
-        ints = recon_inputs['ints']
-        normal = pred_n['normal']
-        reflectance = pred_r['reflectance']
-        recon = reconstruct(normal, reflectance, lights, ints)
-        loss = criterion.forward(255 * recon,255 * data['img']); 
+        loss = criterion.forward(255 * pred_r['reflectance'] ,255 * input['reflectance']); 
         timer.updateTime('Crit');
         criterion.backward(); timer.updateTime('Backward')
 
@@ -45,7 +32,7 @@ def train(args, loader, models, criterion, optimizers, log, epoch, recorder):
             log.printItersSummary(opt)
 
         if iters % args.train_save == 0:
-            results, recorder, nrow = prepareSave(args, data, pred_c, pred_n, recon, pred_r, recorder, log) 
+            results, recorder, nrow = prepareReflectanceSave(args, input, pred_r,  recorder, log) 
             log.saveImgResults(results, 'train', epoch, iters, nrow=nrow)
             log.plotCurves(recorder, 'train', epoch=epoch, intv=args.train_disp)
 
@@ -74,6 +61,17 @@ def prepareSave(args, data, pred_c, pred, recon, pred_r, recorder, log):
         recorder.updateIter('train', acc.keys(), acc.values())
 
     nrow = input_var.shape[0] if input_var.shape[0] <= 32 else 32
+    return results, recorder, nrow
+
+def prepareReflectanceSave(args, data, pred, recorder, log):
+    pred_out = pred["reflectance"]
+    gt_out = data["reflectance"]
+    mask = data['mask']
+    masked_pred = pred_out * mask.data.expand_as(pred['reflectance'].data)
+    results = [gt_out.data, masked_pred.data]
+    acc, error_map = eval_utils.calShadowAcc(data['reflectance'].data, pred['reflectance'].data,data['mask'].data)
+    recorder.updateIter('train', acc.keys(), acc.values())
+    nrow = data['img'].shape[0] 
     return results, recorder, nrow
 
 def reconInputs(args, x):

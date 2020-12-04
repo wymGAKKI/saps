@@ -54,7 +54,7 @@ def buildModelStage2(args):
 
 def buildModelStage3(args):
     print('Creating Stage3 Model %s' % (args.model_s3))
-    in_c = 6 if args.s2_in_light else 3
+    in_c = 7
     other = {
             'img_num':  args.in_img_num,
             'in_mask':  args.in_mask,  'in_light': args.in_light, 

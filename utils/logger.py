@@ -32,7 +32,14 @@ class Logger(object):
     def _addArguments(self, args):
         info = ''
         if hasattr(args, 'run_model') and args.run_model:
-            info += '_run_model,%s' % os.path.basename(args.retrain).split('.')[0]
+            if args.retrain_s0:
+                info += '_run_model,%s' % os.path.basename(args.retrain_s0).split('.')[0]
+            if args.retrain:
+                info += '_run_model,%s' % os.path.basename(args.retrain).split('.')[0]
+            if args.retrain_s2:
+                info += '_run_model,%s' % os.path.basename(args.retrain_s2).split('.')[0]
+            if args.retrain_s3:
+                info += '_run_model,%s' % os.path.basename(args.retrain_s3).split('.')[0]
         arg_var  = vars(args)
         for k in args.str_keys:  
             info = '{0},{1}'.format(info, arg_var[k])
@@ -57,7 +64,14 @@ class Logger(object):
 
     def _checkPath(self, args, dir_name):
         if hasattr(args, 'run_model') and args.run_model:
-            log_root = os.path.join(os.path.dirname(args.retrain), dir_name)
+            if args.retrain:
+                log_root = os.path.join(os.path.dirname(args.retrain), dir_name)
+            if args.retrain_s2:
+                log_root = os.path.join(os.path.dirname(args.retrain_s2), dir_name)
+            if args.retrain_s3:
+                log_root = os.path.join(os.path.dirname(args.retrain_s3), dir_name)
+            if args.retrain_s0:
+                log_root = os.path.join(os.path.dirname(args.retrain_s0), dir_name)
             args.log_dir = log_root
             sub_dirs = ['test']
         else:
@@ -162,12 +176,16 @@ class Logger(object):
 
     def saveShadowResults(self, results, split, epoch, iters, nrow, error=''):
         #res = [img.permute(0, 2 ,3 ,1) for img in results]
+        max_save_n = self.args.test_save_n if split == 'test' else self.args.train_save_n
         res = [img.cpu() for img in results]
+        res = self.splitMulitChannel(res, max_save_n)
+        res = torch.cat(self.convertToSameSize(res))
         save_dir = self.getSaveDir(split, epoch, "Image")
         save_prefix = os.path.join(save_dir, '%d_%d' % (epoch, iters))
         save_prefix += ('_%s' % error) if error != '' else ''
-        vutils.save_image(res[0], save_prefix + '_gt.png', nrow=nrow, normalize=True)
-        vutils.save_image(res[1], save_prefix + '_pred.png', nrow=nrow, normalize=True)
+        vutils.save_image(res, save_prefix + '.png', nrow=nrow, normalize=True)
+        # vutils.save_image(res[0], save_prefix + '_gt.png', nrow=nrow, normalize=True)
+        # vutils.save_image(res[1], save_prefix + '_pred.png', nrow=nrow, normalize=True)
 
     def plotCurves(self, recorder, split='train', epoch=-1, intv=1):
         dict_of_array = recorder.recordToDictOfArray(split, epoch, intv)

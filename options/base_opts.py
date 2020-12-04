@@ -13,6 +13,9 @@ class BaseOpts(object):
         self.parser.add_argument('--data_dir2',   default='/mnt/data/CyclePS/datasets/PS_Sculpture_Dataset')
         self.parser.add_argument('--shadowdataset',     default='ShadowDataset')
         self.parser.add_argument('--shadowdata_dir',    default='/mnt/data/CyclePS/datasets/ShadowDataset')
+        self.parser.add_argument('--blobdataset_dir',    default='/mnt/data/CyclePS/datasets/blobdataset')
+        self.parser.add_argument('--mydata_dir',    default='/mnt/data/CyclePS/datasets/MyDataset/')
+        self.parser.add_argument('--mydataset',     default='MyDataset')
         self.parser.add_argument('--concat_data', default=True, action='store_false')
         self.parser.add_argument('--l_suffix',    default='_mtrl.txt')
 

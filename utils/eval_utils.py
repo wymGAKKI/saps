@@ -60,6 +60,9 @@ def calNormalAcc(gt_n, pred_n, mask=None):
 def calShadowAcc(gt_shadow, pred_shadow, mask=None):
     """Tensor Dim: NxCxHxW"""
     #mask = mask.unsqueeze(1)
+    if (mask.shape[1] == 1):
+        mask = mask.repeat(1, 3, 1, 1)
+
     error_map   = torch.abs(gt_shadow - pred_shadow)
     valid = mask.bool().sum()
     #print("valid:", valid, "mask.shape:", mask.shape)
@@ -70,6 +73,25 @@ def calShadowAcc(gt_shadow, pred_shadow, mask=None):
     n_err_mean = ang_valid.sum() / valid
     # angular_map: torch.Size([1, 3, 244, 400])
     value = {'shadow_err_mean': n_err_mean.item()}
+    angular_error_map = {'angular_map': angular_map}
+    return value, angular_error_map
+
+def calReflectanceAcc(gt_shadow, pred_shadow, mask=None):
+    """Tensor Dim: NxCxHxW"""
+    #mask = mask.unsqueeze(1)
+    if (mask.shape[1] == 1):
+        mask = mask.repeat(1, 3, 1, 1)
+
+    error_map   = torch.abs(gt_shadow - pred_shadow)
+    valid = mask.bool().sum()
+    #print("valid:", valid, "mask.shape:", mask.shape)
+    ang_valid  = error_map[mask.bool()]
+    #print("ang_valid:", ang_valid.shape, "ang_valid.sum():", ang_valid.sum())
+    #angular_map = colorMap(error_map.cpu().squeeze(1))
+    angular_map = error_map
+    n_err_mean = ang_valid.sum() / valid
+    # angular_map: torch.Size([1, 3, 244, 400])
+    value = {'reflectance_err_mean': n_err_mean.item()}
     angular_error_map = {'angular_map': angular_map}
     return value, angular_error_map
 

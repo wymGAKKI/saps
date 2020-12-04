@@ -71,24 +71,20 @@ class RENet(nn.Module):
                 m.bias.data.zero_()
 
     def prepareInputs(self, x):
-        imgs = torch.split(x[0], 3, 1)
-        idx = 1
-        if self.other['in_light']: idx += 1
-        if self.other['in_mask']:  idx += 1
-        dirs = torch.split(x[idx]['dirs'], x[0].shape[0], 0)
-        ints = torch.split(x[idx]['intens'], 3, 1)
+        #x = {'img': img, 'mask': mask, 'dirs': dirs, 'reflectance':reflectance}
+        imgs = torch.split(x['img'], 3, 1)
+        lights = torch.split(x['dirs'], 3, 1)
+        mask = x['mask']
+        # dirs = torch.split(x['dirs'], x[0].shape[0], 0)
         # print("dirs:", dirs[0].shape)
         # print("ints:", ints[0].shape)
-        s2_inputs = []
+        inputs = []
         for i in range(len(imgs)):
-            n, c, h, w = imgs[i].shape
-            l_dir = dirs[i] if dirs[i].dim() == 4 else dirs[i].view(n, -1, 1, 1)
-            l_int = torch.diag(1.0 / (ints[i].contiguous().view(-1)+1e-8))
-            img   = imgs[i].contiguous().view(n * c, h * w)
-            img   = torch.mm(l_int, img).view(n, c, h, w)
-            img_light = torch.cat([img, l_dir.expand_as(img)], 1)
-            s2_inputs.append(img_light)
-        return s2_inputs
+            #print(imgs[i].shape, lights[i].expand_as(imgs[i]).shape, mask.shape)
+            img_light = torch.cat([imgs[i], lights[i].expand_as(imgs[i]), mask], 1)
+            
+            inputs.append(img_light)
+        return inputs
     
     def reconInputs(self, x):
         imgs = torch.split(x[0], 3, 1)

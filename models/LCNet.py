@@ -91,18 +91,12 @@ class LCNet(nn.Module):
         inputs = list(torch.split(imgs, 3, 1))
         # print('inputs:', inputs[0].shape, 'len:', len(inputs))
         idx = 1
-        if self.other['in_light']:
-            light = torch.split(x[idx], 3, 1)
-            for i in range(len(inputs)):
-                inputs[i] = torch.cat([inputs[i], light[i]], 1)
-            idx += 1
-        if self.other['in_mask']:
-            mask = x[idx]
-            if mask.shape[2] != inputs[0].shape[2] or mask.shape[3] != inputs[0].shape[3]:
-                mask = torch.nn.functional.upsample(mask, size=(t_h, t_w), mode='bilinear')
-            for i in range(len(inputs)):
-                inputs[i] = torch.cat([inputs[i], mask], 1)
-            idx += 1
+        mask = x[idx]
+        if mask.shape[2] != inputs[0].shape[2] or mask.shape[3] != inputs[0].shape[3]:
+            mask = torch.nn.functional.upsample(mask, size=(t_h, t_w), mode='bilinear')
+        for i in range(len(inputs)):
+            inputs[i] = torch.cat([inputs[i], mask], 1)
+        idx += 1
         return inputs
 
     def fuseFeatures(self, feats, fuse_type):

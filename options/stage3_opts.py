@@ -42,6 +42,7 @@ class TrainOpts(BaseOpts):
         BaseOpts.setDefault(self)
         self.args.stage3    = True
         self.args.test_resc = False
+        self.args.item = "Reflectance"
         self.collectInfo()
 
     def parse(self):

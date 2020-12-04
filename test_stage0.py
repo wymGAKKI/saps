@@ -62,8 +62,9 @@ def prepareRes(args, data, pred, recorder, log, split):
 def prepareSave(args, data, pred, recorder, log):
     pred_out = pred["shadow"].repeat(1, 3, 1, 1)
     gt_out = data["shadow"].repeat(1, 3, 1, 1)
-    results = [gt_out.data, pred_out.data]
+    img = data['img']
+    results = [gt_out.data, pred_out.data, img.data]
     acc, error_map = eval_utils.calShadowAcc(data['shadow'].data, pred['shadow'].data,data['mask'].data)
     recorder.updateIter('train', acc.keys(), acc.values())
-    nrow = data['normal'].shape[0] 
+    nrow = pred["shadow"].shape[0] 
     return results, recorder, nrow

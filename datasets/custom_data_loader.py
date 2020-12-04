@@ -38,11 +38,53 @@ def benchmarkLoader(args):
     return test_loader
 
 def shadowDataloader(args):
-    args.log.printWrite("=> fetching img pairs in %s" % (args.shadowdata_dir))
+    args.log.printWrite("=> fetching img pairs in %s" % (args.mydata_dir))
     datasets = __import__('datasets.' + args.shadowdataset)
     dataset_file = getattr(datasets, args.shadowdataset)
-    train_set = getattr(dataset_file, args.shadowdataset)(args, args.shadowdata_dir, 'train')
-    val_set   = getattr(dataset_file, args.shadowdataset)(args, args.shadowdata_dir, 'val')
+    train_set = getattr(dataset_file, args.shadowdataset)(args, args.mydata_dir, 'train')
+    val_set   = getattr(dataset_file, args.shadowdataset)(args, args.mydata_dir, 'val')
+
+    args.log.printWrite('Found Data:\t %d Train and %d Val' % (len(train_set), len(val_set)))
+    args.log.printWrite('\t Train Batch: %d, Val Batch: %d' % (args.batch, args.val_batch))
+
+    train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch,
+        num_workers=args.workers, pin_memory=args.cuda, shuffle=True)
+    test_loader  = torch.utils.data.DataLoader(val_set , batch_size=args.val_batch,
+        num_workers=args.workers, pin_memory=args.cuda, shuffle=False)
+    return train_loader, test_loader
+
+def shadowTestDataloader(args):
+    args.log.printWrite("=> fetching img pairs in %s" % (args.mydata_dir))
+    datasets = __import__('datasets.' + args.shadowdataset)
+    dataset_file = getattr(datasets, args.shadowdataset)
+    #train_set = getattr(dataset_file, args.shadowdataset)(args, args.mydata_dir, 'train')
+    val_set   = getattr(dataset_file, args.shadowdataset)(args, args.mydata_dir, 'val')
+    test_loader  = torch.utils.data.DataLoader(val_set , batch_size=args.test_batch,
+        num_workers=args.workers, pin_memory=args.cuda, shuffle=False)
+    return test_loader
+
+def reflectanceDataloader(args):
+    args.log.printWrite("=> fetching img pairs in %s" % (args.mydata_dir))
+    datasets = __import__('datasets.' + args.mydataset)
+    dataset_file = getattr(datasets, args.mydataset)
+    train_set = getattr(dataset_file, args.mydataset)(args, args.mydata_dir, 'train')
+    val_set   = getattr(dataset_file, args.mydataset)(args, args.mydata_dir, 'val')
+
+    args.log.printWrite('Found Data:\t %d Train and %d Val' % (len(train_set), len(val_set)))
+    args.log.printWrite('\t Train Batch: %d, Val Batch: %d' % (args.batch, args.val_batch))
+
+    train_loader = torch.utils.data.DataLoader(train_set, batch_size=args.batch,
+        num_workers=args.workers, pin_memory=args.cuda, shuffle=True)
+    test_loader  = torch.utils.data.DataLoader(val_set , batch_size=args.val_batch,
+        num_workers=args.workers, pin_memory=args.cuda, shuffle=False)
+    return train_loader, test_loader
+
+def myDataloader(args):
+    args.log.printWrite("=> fetching img pairs in %s" % (args.mydata_dir))
+    datasets = __import__('datasets.' + args.dataset)
+    dataset_file = getattr(datasets, args.dataset)
+    train_set = getattr(dataset_file, args.dataset)(args, args.mydata_dir, 'train')
+    val_set   = getattr(dataset_file, args.dataset)(args, args.mydata_dir, 'val')
 
     args.log.printWrite('Found Data:\t %d Train and %d Val' % (len(train_set), len(val_set)))
     args.log.printWrite('\t Train Batch: %d, Val Batch: %d' % (args.batch, args.val_batch))

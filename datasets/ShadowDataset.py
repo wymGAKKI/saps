@@ -11,7 +11,7 @@ from datasets import util
 np.random.seed(0)
 
 class ShadowDataset(data.Dataset):
-    #root = "/mnt/data/CyclePS/datasets/ShadowDataset/"
+    #root = "/mnt/data/CyclePS/datasets/MyDataset/"
     def __init__(self, args, root, split='train'):
         self.root  = os.path.join(root)
         self.split = split
@@ -20,15 +20,16 @@ class ShadowDataset(data.Dataset):
         self.light_list = util.readList(os.path.join(self.root, "lights_dataset.txt"))
 
     def _getInputPath(self, index):
-        obj_index = index // 25
+        obj_index = index // 100
+        light_index = index % 100
         obj = self.shape_list[obj_index]
-        view_light = util.readList(os.path.join(self.root,obj, "light.txt"))
-        view,light = view_light[index%25].split('-')
-        normal_path = os.path.join(self.root, obj, obj + view + '_normal.mat')
-        mask_path = os.path.join(self.root, obj, obj + view + '_mask.mat')
-        img_path = os.path.join(self.root, obj, obj + view + 'light_'+light+'_shadowOn.png')
-        shadow_path    = os.path.join(self.root, obj, obj + view +'light_'+light+'_shadow.png')
-        light = self.light_list[int(light)]
+        #view_light = util.readList(os.path.join(self.root,obj, "light.txt"))
+        #view,light = view_light[index%25].split('-')
+        normal_path = os.path.join(self.root, obj, 'normal.mat')
+        mask_path = os.path.join(self.root, obj, 'mask.mat')
+        img_path = os.path.join(self.root, obj, str(light_index) + '.png')
+        shadow_path    = os.path.join(self.root, obj, 'Shadow', str(light_index) + 'Shadow.png')
+        light = self.light_list[light_index]
         return normal_path, mask_path, img_path, shadow_path, light
 
     def __getitem__(self, index):
