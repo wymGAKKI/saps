@@ -19,7 +19,7 @@ def train(args, loader, models, criterion, optimizers, log, epoch, recorder):
 
     for i, sample in enumerate(loader): 
         
-        data = model_utils.parseReconData(args, sample, timer, 'train')
+        data = model_utils.parsestage4Data(args, sample, timer, 'train')
         #data = {'img': img(n, 3*in_img_num, h, w), 
         # 'normal': normal(n, 3, h, w), 
         # 'mask': mask(n, 1, h, w), 
@@ -184,27 +184,32 @@ def testReconstruct():
     rpath = "/mnt/data/CyclePS/datasets/MyDataset/4a-bust-of-demosthenes_5/Reflectance.png"
     #imgpath = "/mnt/data/CyclePS/datasets/MyDataset/4a-bust-of-demosthenes_5/79.png"
     spath = "/mnt/data/CyclePS/datasets/MyDataset/4a-bust-of-demosthenes_5/Shadow/35Shadow.png"
-    normal = sio.loadmat(npath)['normal'].astype(np.float32)
-    normal = torch.from_numpy(np.transpose(normal, (2, 0, 1))).unsqueeze(0)
-    # img = imread(imgpath).astype(np.float32) / 255.0
-    # img = torch.from_numpy(img[:,:,:3])
-    # img = np.transpose(img, (2,0,1))
+    # normal = sio.loadmat(npath)['normal'].astype(np.float32)
+    # normal = torch.from_numpy(np.transpose(normal, (2, 0, 1))).unsqueeze(0)
+    # # img = imread(imgpath).astype(np.float32) / 255.0
+    # # img = torch.from_numpy(img[:,:,:3])
+    # # img = np.transpose(img, (2,0,1))
     
+    # reflectance = imread(rpath).astype(np.float32) / 255.0
+    # reflectance = torch.from_numpy(np.transpose(reflectance, (2, 0, 1))).unsqueeze(0)
+    # reflectance = reflectance[:,:3,:,:]
+    
+    # shadow = imread(spath).astype(np.float32) / 255.0
+    # shadow = torch.from_numpy(np.transpose((shadow), (2, 0, 1))).unsqueeze(0)
+    # light = torch.from_numpy(np.asarray([-0.857027, 0.075646, 0.509688], dtype='float32').reshape(1,3,1,1))
+    # light = light.expand_as(normal)
+    # # print(reflectance.shape)
+    # # print(normal.shape)
+    # # print(light.shape)
+    # # print(shadow.shape)
+    # recon = reconstruct(normal, reflectance, light, shadow)
+    # print(recon.max())
+    # vutils.save_image(recon, 'recon.png')
     reflectance = imread(rpath).astype(np.float32) / 255.0
+    if(reflectance.shape[2] == 4):
+            reflectance = reflectance[:,:,:3]
     reflectance = torch.from_numpy(np.transpose(reflectance, (2, 0, 1))).unsqueeze(0)
-    reflectance = reflectance[:,:3,:,:]
-    
-    shadow = imread(spath).astype(np.float32) / 255.0
-    shadow = torch.from_numpy(np.transpose((shadow), (2, 0, 1))).unsqueeze(0)
-    light = torch.from_numpy(np.asarray([-0.857027, 0.075646, 0.509688], dtype='float32').reshape(1,3,1,1))
-    light = light.expand_as(normal)
-    # print(reflectance.shape)
-    # print(normal.shape)
-    # print(light.shape)
-    # print(shadow.shape)
-    recon = reconstruct(normal, reflectance, light, shadow)
-    print(recon.max())
-    vutils.save_image(recon, 'recon.png')
+    vutils.save_image(reflectance, 'rf.png')
 
-if __name__ == '__main__'
-testReconstruct()
+if __name__ == '__main__':
+    testReconstruct()

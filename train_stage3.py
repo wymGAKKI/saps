@@ -10,11 +10,14 @@ def train(args, loader, model, criterion, optimizers, log, epoch, recorder):
     timer = time_utils.Timer(args.time_sync);
 
     for i, sample in enumerate(loader):
-        input = model_utils.parseReflectanceData(args, sample, timer, 'train')
+        data = model_utils.parseReflectanceData(args, sample, timer, 'train')
+        input = model_utils.getReflectanceInput(args, data)
         pred_r =  model(input); timer.updateTime('Forward')    
         optimizer.zero_grad()
+        # print('pred_r[reflectance].shape', pred_r['reflectance'].shape)
+        # print('input[reflectance].shape', input['reflectance'].shape)
 
-        loss = criterion.forward(255 * pred_r['reflectance'] ,255 * input['reflectance']); 
+        loss = criterion.forward(255 * pred_r['reflectance'] ,255 * data['reflectance']); 
         timer.updateTime('Crit');
         criterion.backward(); timer.updateTime('Backward')
 
@@ -22,8 +25,13 @@ def train(args, loader, model, criterion, optimizers, log, epoch, recorder):
 
         optimizer.step(); timer.updateTime('Solver')
         # print('-----------------models parameters:----------\n')
-        # for name, parms in models[2].named_parameters():	
-        #     print('-->name:', name, '-->grad_requirs:',parms.requires_grad, ' -->grad_value:',parms.grad)
+        # for name, parms in model.named_parameters():
+        #     if name =='conv4.0.weight':	
+        #         try:
+        #             print('-->name:', name, '-->grad_requirs:',parms.requires_grad, ' -->grad_value:',parms.grad[0][0][0][0])
+        #         except IndexError:
+        #             continue
+                    
 
         iters = i + 1
         if iters % args.train_disp == 0:
@@ -32,7 +40,7 @@ def train(args, loader, model, criterion, optimizers, log, epoch, recorder):
             log.printItersSummary(opt)
 
         if iters % args.train_save == 0:
-            results, recorder, nrow = prepareReflectanceSave(args, input, pred_r,  recorder, log) 
+            results, recorder, nrow = prepareReflectanceSave(args, data, pred_r,  recorder, log) 
             log.saveImgResults(results, 'train', epoch, iters, nrow=nrow)
             log.plotCurves(recorder, 'train', epoch=epoch, intv=args.train_disp)
 

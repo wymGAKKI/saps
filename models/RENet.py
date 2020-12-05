@@ -53,7 +53,7 @@ class Regressor(nn.Module):
         return reflectance
 
 class RENet(nn.Module):
-    def __init__(self, fuse_type='max', batchNorm=False, c_in=3, other={}):
+    def __init__(self, batchNorm=False, c_in=3, other={}):
         super(RENet, self).__init__()
         self.extractor = FeatExtractor(batchNorm, c_in, other)
         self.regressor = Regressor(batchNorm, other)
@@ -72,18 +72,13 @@ class RENet(nn.Module):
 
     def prepareInputs(self, x):
         #x = {'img': img, 'mask': mask, 'dirs': dirs, 'reflectance':reflectance}
-        imgs = torch.split(x['img'], 3, 1)
-        lights = torch.split(x['dirs'], 3, 1)
+        img = x['img']
+        # lights = torch.split(x['dirs'], 3, 1)
         mask = x['mask']
         # dirs = torch.split(x['dirs'], x[0].shape[0], 0)
         # print("dirs:", dirs[0].shape)
         # print("ints:", ints[0].shape)
-        inputs = []
-        for i in range(len(imgs)):
-            #print(imgs[i].shape, lights[i].expand_as(imgs[i]).shape, mask.shape)
-            img_light = torch.cat([imgs[i], lights[i].expand_as(imgs[i]), mask], 1)
-            
-            inputs.append(img_light)
+        inputs = torch.cat([img, mask], 1)
         return inputs
     
     def reconInputs(self, x):
@@ -112,20 +107,8 @@ class RENet(nn.Module):
 
     def forward(self, x):
         inputs = self.prepareInputs(x)
-        feats = torch.Tensor()
-        for i in range(len(inputs)):
-            feat, shape = self.extractor(inputs[i])
-            if i == 0:
-                feats = feat
-            else:
-                if self.fuse_type == 'mean':
-                    feats = torch.stack([feats, feat], 1).sum(1)
-                elif self.fuse_type == 'max':
-                    feats, _ = torch.stack([feats, feat], 1).max(1)
-        if self.fuse_type == 'mean':
-            feats = feats / len(img_split)
-        feat_fused = feats
-        reflectance = self.regressor(feat_fused, shape)
+        feat, shape = self.extractor(inputs)
+        reflectance = self.regressor(feat, shape)
         pred = {}
         pred['reflectance'] = reflectance
         return pred

@@ -54,7 +54,7 @@ def buildModelStage2(args):
 
 def buildModelStage3(args):
     print('Creating Stage3 Model %s' % (args.model_s3))
-    in_c = 7
+    in_c = 3 * args.in_img_num + 1
     other = {
             'img_num':  args.in_img_num,
             'in_mask':  args.in_mask,  'in_light': args.in_light, 
@@ -62,7 +62,7 @@ def buildModelStage3(args):
             }
     models = __import__('models.' + args.model_s3)
     model_file = getattr(models, args.model_s3)
-    model = getattr(model_file, args.model_s3)(args.fuse_type, args.use_BN, in_c, other)
+    model = getattr(model_file, args.model_s3)(args.use_BN, in_c, other)
 
     if args.cuda: model = model.cuda()
 

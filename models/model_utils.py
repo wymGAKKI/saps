@@ -12,6 +12,14 @@ def getInput(args, data):
     input_list.append(data['mask'])
     return input_list
 
+def getReflectanceInput(args, data):
+    input = {}
+    input['img'] = data['img']
+    input['mask'] = data['mask']
+    # print("getinput input_list:", len(input_list))  getinput input_list: 1
+    #input_list.append(data['mask'])
+    return input
+
 def parseData(args, sample, timer=None, split='train'):
     img, normal, mask = sample['img'], sample['normal'], sample['mask']
     ints = sample['ints']
@@ -29,8 +37,8 @@ def parseData(args, sample, timer=None, split='train'):
     data = {'img': img, 'normal': normal, 'mask': mask, 'dirs': dirs, 'ints': ints}
     return data
 
-def parses4Data(args, sample, timer=None, split='train'):
-    img, normal, mask, reflectance = sample['img'], sample['normal'], sample['mask'], sample['reflectance']
+def parsestage4Data(args, sample, timer=None, split='train'):
+    img, normal, mask= sample['img'], sample['normal'], sample['mask']
     dirs = sample['dirs'].expand_as(img)
 
     if timer: timer.updateTime('ToCPU')
@@ -38,7 +46,7 @@ def parses4Data(args, sample, timer=None, split='train'):
         img, normal, mask = img.cuda(), normal.cuda(), mask.cuda()
         dirs = dirs.cuda()
         if timer: timer.updateTime('ToGPU')
-    data = {'img': img, 'normal': normal, 'mask': mask, 'reflectance': reflectance, 'dirs': dirs}
+    data = {'img': img, 'normal': normal, 'mask': mask, 'dirs': dirs}
     return data
 
 def parseshadowData(args, sample, timer=None, split='train'):
@@ -56,7 +64,7 @@ def parseshadowData(args, sample, timer=None, split='train'):
 def parseReflectanceData(args, sample, timer=None, split='train'):
     img, mask, reflectance= sample['img'], sample['mask'], sample['reflectance']
     #print("img shape:", img.shape)
-    dirs = sample['dirs'].expand_as(img)
+    #dirs = sample['dirs'].expand_as(img)
 
     # else: # predict lighting, prepare ground truth
     #     n, c, h, w = sample['dirs'].shape
@@ -66,9 +74,9 @@ def parseReflectanceData(args, sample, timer=None, split='train'):
     if args.cuda:
         img, mask = img.cuda(), mask.cuda()
         reflectance = reflectance.cuda()
-        dirs = dirs.cuda()
+        #dirs = dirs.cuda()
         if timer: timer.updateTime('ToGPU')
-    data = {'img': img, 'mask': mask, 'dirs': dirs, 'reflectance':reflectance}
+    data = {'img': img, 'mask': mask, 'reflectance':reflectance}
     return data
 
 def getInputChanel(args):
