@@ -3,7 +3,8 @@ import torch
 
 def buildModel(args):
     print('Creating Model %s' % (args.model))
-    in_c = model_utils.getInputChanel(args)
+    #in_c = model_utils.getInputChanel(args)
+    in_c = 4
     other = {
             'img_num':  args.in_img_num, 
             'test_h':   args.test_h,   'test_w':   args.test_w,

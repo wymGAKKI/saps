@@ -64,7 +64,7 @@ def prepareRes(args, data, pred, recorder, log, split):
         error += 'I_%.3f-' % (int_acc['ints_ratio'])
 
     if args.s1_est_n:
-        acc, error_map = eval_utils.calNormalAcc(data['n'].data, pred['n'].data, data['m'].data)
+        acc, error_map = eval_utils.calNormalAcc(data['normal'].data, pred['normal'].data, data['mask'].data)
         recorder.updateIter(split, acc.keys(), acc.values())
         iter_res.append(acc['n_err_mean'])
         error += 'N_%.3f-' % (acc['n_err_mean'])
@@ -74,10 +74,10 @@ def prepareRes(args, data, pred, recorder, log, split):
 
 
 def prepareSave(args, data, pred):
-    results = [data['img'].data, data['m'].data, (data['n'].data+1)/2]
+    results = [data['img'].data, data['mask'].data, (data['normal'].data+1)/2]
     if args.s1_est_n:
-        pred_n = (pred['n'].data + 1) / 2
-        masked_pred = pred_n * data['m'].data.expand_as(pred['n'].data)
+        pred_n = (pred['normal'].data + 1) / 2
+        masked_pred = pred_n * data['mask'].data.expand_as(pred['normal'].data)
         res_n = [pred_n, masked_pred, data['error_map']]
         results += res_n
 

@@ -29,7 +29,10 @@ class skipRENet(nn.Module):
     
     def prepareInputs(self, x):
         #x = {'img': img, 'mask': mask, 'dirs': dirs, 'reflectance':reflectance}
-        img = x['img']
+        if x['img'].shape[1] > 96:
+            img = x['img'][:,0:96,:,:]
+        else:
+            img = x['img']
         # lights = torch.split(x['dirs'], 3, 1)
         mask = x['mask']
         # dirs = torch.split(x['dirs'], x[0].shape[0], 0)

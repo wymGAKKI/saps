@@ -10,7 +10,7 @@ import torchvision.utils as vutils
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 def train(args, loader, models, criterion, optimizers, log, epoch, recorder):
     models[0].eval()
-    models[1].eval()
+    models[1].train()
     models[2].train()
     models[3].eval()
     optimizer, optimizer_c = optimizers
@@ -19,7 +19,7 @@ def train(args, loader, models, criterion, optimizers, log, epoch, recorder):
 
     for i, sample in enumerate(loader): 
         
-        data = model_utils.parsestage4Data(args, sample, timer, 'train')
+        data = model_utils.parsePokeData(args, sample, timer, 'train')
         #data = {'img': img(n, 3*in_img_num, h, w), 
         # 'normal': normal(n, 3, h, w), 
         # 'mask': mask(n, 1, h, w), 
@@ -57,7 +57,7 @@ def train(args, loader, models, criterion, optimizers, log, epoch, recorder):
         normal = pred_n['normal']
         shadow = pred_s
         reflectance = pred_r['reflectance']
-        recon = reconstruct(normal, reflectance, lights, shadow)
+        recon = reconstruct(normal, reflectance, lights, shadow, data['mask'])
         loss = criterion.forward(255 * recon,255 * data['img']); 
         timer.updateTime('Crit');
         criterion.backward(); timer.updateTime('Backward')
@@ -76,17 +76,24 @@ def train(args, loader, models, criterion, optimizers, log, epoch, recorder):
             log.printItersSummary(opt)
 
         if iters % args.train_save == 0:
-            results, recorder, nrow = prepareSave(args, data, pred_c, pred_n, recon, pred_r, recorder, log) 
+            results, recorder, nrow = prepareSave(args, data, pred_c, pred_n, recon, pred_r, pred_s, recorder, log) 
             log.saveImgResults(results, 'train', epoch, iters, nrow=nrow)
+            #log.saveShadowResults(pred_s, 'train', epoch, iters, nrow=nrow)
+
             log.plotCurves(recorder, 'train', epoch=epoch, intv=args.train_disp)
 
         if args.max_train_iter > 0 and iters >= args.max_train_iter: break
     opt = {'split': 'train', 'epoch': epoch, 'recorder': recorder}
     log.printEpochSummary(opt)
 
-def prepareSave(args, data, pred_c, pred, recon, pred_r, recorder, log):
+def prepareSave(args, data, pred_c, pred, recon, pred_r, pred_s, recorder, log):
     input_var, mask_var = data['img'], data['mask']
-    results = [input_var.data, recon, mask_var.data, (data['normal'].data+1)/2, ]
+    results = [input_var.data, recon, mask_var.data ]
+    shadows = []
+    for s in pred_s.split(1, 1):
+        s = s.repeat(1, 3, 1, 1)
+        shadows.append(s)
+    shadow = torch.cat(shadows, 1)
     # if args.s1_est_d:
     #     l_acc, data['dir_err'] = eval_utils.calDirsAcc(data['lights'].data, pred_c['dirs'].data, args.batch)
     #     recorder.updateIter('train', l_acc.keys(), l_acc.values())
@@ -95,14 +102,14 @@ def prepareSave(args, data, pred_c, pred, recon, pred_r, recorder, log):
     #     recorder.updateIter('train', int_acc.keys(), int_acc.values())
 
     if args.s2_est_n:
-        acc, error_map = eval_utils.calNormalAcc(data['normal'].data, pred['normal'].data, mask_var.data)
+        #acc, error_map = eval_utils.calNormalAcc(data['normal'].data, pred['normal'].data, mask_var.data)
         pred_n = (pred['normal'].data + 1) / 2
         reflectance = (pred_r['reflectance'].data + 1) / 2
         masked_pred = pred_n * mask_var.data.expand_as(pred['normal'].data)
         masked_reflectance = reflectance * mask_var.data.expand_as(pred_r['reflectance'].data)
-        res_n = [masked_pred, masked_reflectance, error_map['angular_map'], recon]
+        res_n = [masked_pred, masked_reflectance, recon, shadow.data]
         results += res_n
-        recorder.updateIter('train', acc.keys(), acc.values())
+        #recorder.updateIter('train', acc.keys(), acc.values())
 
     nrow = input_var.shape[0] if input_var.shape[0] <= 32 else 32
     return results, recorder, nrow
@@ -147,7 +154,7 @@ def reconInputs(args, x):
         s2_inputs['lights'] = light
         return s2_inputs
 
-def reconstruct(pred_n, pred_r, light, shadow):
+def reconstruct(pred_n, pred_r, light, shadow,mask):
         normal = pred_n
         n, c, h, w = normal.shape
         # print('***************reflectance', pred_nr['reflectance'].max(), pred_nr['reflectance'].min())
@@ -167,7 +174,7 @@ def reconstruct(pred_n, pred_r, light, shadow):
             #print(product.dtype)
             #maximam = torch.max(zeros, product)
             maximam = torch.max(product, zeros)
-            img = maximam * reflectance * shadows[idx].expand_as(reflectance)
+            img = maximam * reflectance * shadows[idx].expand_as(reflectance) * mask
             #img = torch.max(zeros,(maximam * reflectance - shadows[idx])).expand_as(reflectance)
             recons.append(img)
         recon = torch.cat(recons, 1)
@@ -200,7 +207,7 @@ def testReconstruct():
     # print(light.shape)
     # print(shadow.shape)
     recon = reconstruct(normal, reflectance, light, shadow)
-    print(recon.max())
+    #print(recon.max())
     vutils.save_image(recon, 'recon.png')
     # reflectance = imread(rpath).astype(np.float32) / 255.0
     # if(reflectance.shape[2] == 4):

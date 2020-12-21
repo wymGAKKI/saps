@@ -28,7 +28,7 @@ class ShadowDataset(data.Dataset):
         normal_path = os.path.join(self.root, obj, 'normal.mat')
         mask_path = os.path.join(self.root, obj, 'mask.mat')
         img_path = os.path.join(self.root, obj, str(light_index) + '.png')
-        shadow_path    = os.path.join(self.root, obj, 'Shadow', str(light_index) + 'Shadow.png')
+        shadow_path    = os.path.join(self.root, obj, 'Shadow', str(light_index) + 'ShadowDivide.png')
         light = self.light_list[light_index]
         return normal_path, mask_path, img_path, shadow_path, light
 

@@ -20,6 +20,20 @@ def getReflectanceInput(args, data):
     #input_list.append(data['mask'])
     return input
 
+def getShadowInput(args, data):
+    input = {}
+    input['img'] = data['img']
+    input['mask'] = data['mask']
+    input['normal'] = data['normal']
+    dirs = sample['dirs'].expand_as(img)
+    dirs_split = torch.split(sample['dirs'].view(n, c), 3, 1)
+    dirs = torch.cat(dirs_split, 0)
+    input['light'] = dirs
+    # print("getinput input_list:", len(input_list))  getinput input_list: 1
+    #input_list.append(data['mask'])
+    return input
+
+
 def parseData(args, sample, timer=None, split='train'):
     img, normal, mask = sample['img'], sample['normal'], sample['mask']
     ints = sample['ints']
@@ -38,15 +52,27 @@ def parseData(args, sample, timer=None, split='train'):
     return data
 
 def parsestage4Data(args, sample, timer=None, split='train'):
-    img, normal, mask= sample['img'], sample['normal'], sample['mask']
-    dirs = sample['dirs'].expand_as(img)
+    img, normal, mask = sample['img'], sample['normal'], sample['mask']
+    if 'light' in sample.keys():
+        lights = sample['lights']
+    else:
+        lights = sample['dirs']
 
     if timer: timer.updateTime('ToCPU')
     if args.cuda:
         img, normal, mask = img.cuda(), normal.cuda(), mask.cuda()
-        dirs = dirs.cuda()
         if timer: timer.updateTime('ToGPU')
-    data = {'img': img, 'normal': normal, 'mask': mask, 'dirs': dirs}
+    data = {'img': img, 'normal': normal, 'mask': mask, 'lights':lights}
+    return data
+
+def parsePokeData(args, sample, timer=None, split='train'):
+    img,mask = sample['img'], sample['mask']
+
+    if timer: timer.updateTime('ToCPU')
+    if args.cuda:
+        img, mask = img.cuda(), mask.cuda()
+        if timer: timer.updateTime('ToGPU')
+    data = {'img': img, 'mask': mask}
     return data
 
 def parseshadowData(args, sample, timer=None, split='train'):

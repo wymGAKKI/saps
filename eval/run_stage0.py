@@ -13,11 +13,11 @@ log  = logger.Logger(args)
 
 def main(args):
     model = custom_model.buildModelStage0(args)
-    test_loader = custom_data_loader.shadowTestDataloader(args)
+    val_loader = custom_data_loader.benchmarkLoader(args)
     #test_loader = custom_data_loader.benchmarkLoader(args)
     #model    = custom_model.buildModel(args)
     recorder = recorders.Records(args.log_dir)
-    test_utils.test(args, 'val', test_loader, model, log, 1, recorder)
+    test_utils.test(args, 'val', val_loader, model, log, 1, recorder)
     log.plotCurves(recorder, 'val')
 
 if __name__ == '__main__':

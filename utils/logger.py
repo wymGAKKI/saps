@@ -171,18 +171,19 @@ class Logger(object):
         save_prefix += ('_%s' % error) if error != '' else ''
         #print(save_prefix)
         #print("vutils.save_image(res, save_prefix + '_out.png', nrow=nrow)", res[0].shape, res[1].shape)
+        #print(res, save_prefix + '.png')
         vutils.save_image(res, save_prefix + '.png', nrow=nrow)
         #vutils.save_image(res[1], save_prefix + '_pred.png', nrow=nrow)
 
-    def saveShadowResults(self, results, split, epoch, iters, nrow, error=''):
+    def saveShadowResults(self, results, split, epoch, iters, nrow):
         #res = [img.permute(0, 2 ,3 ,1) for img in results]
         max_save_n = self.args.test_save_n if split == 'test' else self.args.train_save_n
         res = [img.cpu() for img in results]
         res = self.splitMulitChannel(res, max_save_n)
-        res = torch.cat(self.convertToSameSize(res))
+        #res = torch.cat(self.convertToSameSize(res))
         save_dir = self.getSaveDir(split, epoch, "Image")
         save_prefix = os.path.join(save_dir, '%d_%d' % (epoch, iters))
-        save_prefix += ('_%s' % error) if error != '' else ''
+        #save_prefix += ('_%s' % error) if error != '' else ''
         vutils.save_image(res, save_prefix + '.png', nrow=nrow, normalize=True)
         # vutils.save_image(res[0], save_prefix + '_gt.png', nrow=nrow, normalize=True)
         # vutils.save_image(res[1], save_prefix + '_pred.png', nrow=nrow, normalize=True)

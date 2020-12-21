@@ -23,9 +23,15 @@ def test(args, split, loader, model, log, epoch, recorder):
     with torch.no_grad():
         for i, sample in enumerate(loader):
             input = model_utils.parseshadowData(args, sample, timer, split)
-            pred = model(input); timer.updateTime('Forward')
+            shadow_input = prepareShadowInputs(input)
+            shadowlist = []
+            for s in shadow_input:
+                shadow = models[3](s)['shadow']
+                shadowlist.append(shadow)
+            pred_s = torch.cat(shadowlist, 1)
+            #pred = model(input); timer.updateTime('Forward')
 
-            recoder, iter_res, error = prepareRes(args, input, pred, recorder, log, split)
+            #recoder, iter_res, error = prepareRes(args, input, pred, recorder, log, split)
 
             res.append(iter_res)
             iters = i + 1
@@ -46,6 +52,39 @@ def test(args, split, loader, model, log, epoch, recorder):
     opt = {'split': split, 'epoch': epoch, 'recorder': recorder}
     log.printEpochSummary(opt)
 
+def testOnBm(args, split, loader, model, log, epoch, recorder):
+    model.eval()
+    log.printWrite('---- Start %s Epoch %d: %d batches ----' % (split, epoch, len(loader)))
+    timer = time_utils.Timer(args.time_sync);
+
+    disp_intv, save_intv, stop_iters = get_itervals(args, split)
+    res = []
+    with torch.no_grad():
+        for i, sample in enumerate(loader):
+            input = model_utils.getShadowInput(args, sample, timer, split)
+            pred = model(input); timer.updateTime('Forward')
+
+            #recoder, iter_res, error = prepareRes(args, input, pred, recorder, log, split)
+
+            res.append(iter_res)
+            iters = i + 1
+            if iters % disp_intv == 0:
+                opt = {'split':split, 'epoch':epoch, 'iters':iters, 'batch':len(loader), 
+                        'timer':timer, 'recorder': recorder}
+                log.printItersSummary(opt)
+
+            if iters % save_intv == 0:
+                results, recorder, nrow = prepareSave(args, input, pred, recorder, log)
+                log.saveShadowResults(results, split, epoch, iters, nrow=nrow, error=error)
+                log.plotCurves(recorder, split, epoch=epoch, intv=disp_intv)
+
+            if stop_iters > 0 and iters >= stop_iters: break
+    #res = np.vstack([np.array(res), np.array(res).mean(0)])
+    save_name = '%s_res.txt' % (args.suffix)
+    #np.savetxt(os.path.join(args.log_dir, "shadow",split, save_name), res, fmt='%.2f')
+    opt = {'split': split, 'epoch': epoch, 'recorder': recorder}
+    log.printEpochSummary(opt)
+
 def prepareRes(args, data, pred, recorder, log, split):
     data_batch = args.val_batch if split == 'val' else args.test_batch
     iter_res = []
@@ -61,7 +100,7 @@ def prepareRes(args, data, pred, recorder, log, split):
 
 def prepareSave(args, data, pred, recorder, log):
     pred_out = pred["shadow"].repeat(1, 3, 1, 1)
-    gt_out = data["shadow"].repeat(1, 3, 1, 1)
+    #gt_out = data["shadow"].repeat(1, 3, 1, 1)
     img = data['img']
     results = [gt_out.data, pred_out.data, img.data]
     acc, error_map = eval_utils.calShadowAcc(data['shadow'].data, pred['shadow'].data,data['mask'].data)

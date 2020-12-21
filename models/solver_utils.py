@@ -164,9 +164,11 @@ def configOptimizer(args, model):
     scheduler = getLrScheduler(args, optimizer)
     return optimizer, scheduler, records
 
-def configMultiOptimizer(args, model):
+def configMultiOptimizer(args, models):
     records = None
-    paras = list(model[0].parameters()) + list(model[1].parameters()) + list(model[2].parameters()) + list(model[3].parameters())
+    paras = []
+    for model in models:
+        paras += list(model.parameters())
     optimizer = getOptimizer(args, paras)
     scheduler = getLrScheduler(args, optimizer)
     return optimizer, scheduler, records

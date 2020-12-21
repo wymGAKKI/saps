@@ -13,12 +13,17 @@ class TrainOpts(BaseOpts):
         self.parser.add_argument('--epochs',      default=1,     type=int)
         self.parser.add_argument('--batch',       default=16,     type=int)
         self.parser.add_argument('--val_batch',   default=8,      type=int)
-        self.parser.add_argument('--init_lr',     default=0.0005, type=float)
+        self.parser.add_argument('--init_lr',     default=0.00005, type=float)
         self.parser.add_argument('--lr_decay',    default=0.5,    type=float)
         self.parser.add_argument('--beta_1',      default=0.9,    type=float, help='adam')
         self.parser.add_argument('--beta_2',      default=0.999,  type=float, help='adam')
         self.parser.add_argument('--momentum',    default=0.9,    type=float, help='sgd')
         self.parser.add_argument('--w_decay',     default=4e-4,   type=float)
+        self.parser.add_argument('--benchmark',  default='UPS_DiLiGenT_main')
+        self.parser.add_argument('--bm_dir',     default='/mnt/data/CyclePS/datasets/DiLiGenT/pmsData_crop')
+        self.parser.add_argument('--test_batch', default=1,   type=int)
+        self.parser.add_argument('--test_disp',  default=1,   type=int)
+        self.parser.add_argument('--test_save',  default=1,   type=int)
 
         #### Loss Arguments ####
         self.parser.add_argument('--normal_loss', default='cos',  help='cos|mse')

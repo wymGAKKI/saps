@@ -16,6 +16,9 @@ class BaseOpts(object):
         self.parser.add_argument('--blobdataset_dir',    default='/mnt/data/CyclePS/datasets/blobdataset')
         self.parser.add_argument('--mydata_dir',    default='/mnt/data/CyclePS/datasets/MyDataset/')
         self.parser.add_argument('--mydataset',     default='MyDataset')
+        self.parser.add_argument('--pokemondataset',     default='PokemonDataset')
+        self.parser.add_argument('--pokemondata_dir',    default='/mnt/data/CyclePS/datasets/PokemonRescale/')
+
         self.parser.add_argument('--concat_data', default=True, action='store_false')
         self.parser.add_argument('--l_suffix',    default='_mtrl.txt')
 
@@ -56,7 +59,7 @@ class BaseOpts(object):
         self.parser.add_argument('--s1_est_i',    default=True,  action='store_false')
         self.parser.add_argument('--in_light',    default=False, action='store_true')
         self.parser.add_argument('--in_mask',     default=True,  action='store_false')
-        self.parser.add_argument('--use_BN',      default=True, action='store_true')
+        self.parser.add_argument('--use_BN',      default=False, action='store_true')
         self.parser.add_argument('--resume',      default=None)
         self.parser.add_argument('--retrain',     default=None)
         self.parser.add_argument('--save_intv',   default=1,     type=int)
